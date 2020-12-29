@@ -24,7 +24,7 @@ def get_clean_data():
         .config('spark.debug.maxToStringFields', 2000) \
         .getOrCreate()
     sqlContext = SQLContext(sc)
-    n_hydrated_tweets = 2
+    n_hydrated_tweets = 1
 
     # schema for the hydrated tweets dataframe
     schema = StructType([
@@ -34,25 +34,6 @@ def get_clean_data():
     ])
 
     # creation of an empty rdd that will be used to store the hydrated tweets
-    hydrated_tweets_df = spark.createDataFrame(
-        spark.sparkContext.emptyRDD(), schema)
-
-    for i in range(1, n_hydrated_tweets+1):
-        if i < 10:
-            ind = '0' + str(i)
-        else:
-            ind = str(i)
-        source_path = r"C:\Users\Davide\id_tweets\hydrated_tweets_" + ind + '.jsonl'
-        df = sqlContext.read.json(source_path)
-        df_small = df.select('full_text', 'id_str', 'created_at')
-        # print(df_small.count())
-        hydrated_tweets_df = hydrated_tweets_df.union(df_small)
-
-    schema = StructType([
-        StructField('full_text', StringType(), True),
-        StructField('id', StringType(), True),
-        StructField('created_at', StringType(), True)
-    ])
     hydrated_tweets_df = spark.createDataFrame(
         spark.sparkContext.emptyRDD(), schema)
 
@@ -104,7 +85,7 @@ def get_clean_data():
         'label', discretize_sentiment_udf(col('sentiment')))
 
     data_df = regex_data_cleaning(data_df)
-    return data_df
+    return data_df.sample(False, 0.1)
 
 
 def regex_data_cleaning(data):
