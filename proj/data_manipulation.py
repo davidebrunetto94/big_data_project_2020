@@ -16,20 +16,21 @@ def get_timestamped_tweet_sentiment_df(n):
     tweets_sentiment_df = tweets_sentiment_df.withColumn(
         "tweet_id", col('tweet_id').cast(LongType()))
 
-    tweets_sentiment_df.show(55)
     timestamp_from_id_udf = spark.udf.register(
         "timestamp_from_id", timestamp_from_id)
 
     timestamped_tweets_sentiment_df = tweets_sentiment_df.withColumn(
         'timestamp', timestamp_from_id_udf(col('tweet_id')))
-    timestamped_tweets_sentiment_df.show(55)
+    timestamped_tweets_sentiment_df.show(5)
+    return timestamped_tweets_sentiment_df
 
 
 def timestamp_from_id(id):
-    import time
+    import datetime as dt
     shifted_id = id >> 22  # applying right shift operator to the tweet ID
     timestamp = shifted_id + 1288834974657
-    return time.ctime(timestamp/1000)
+    file_time = dt.datetime.fromtimestamp(timestamp/1000)
+    return file_time.strftime("%d %m %Y")
 
 
 def get_spark_sql_context():
