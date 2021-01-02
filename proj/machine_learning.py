@@ -5,9 +5,14 @@ from pyspark.ml.feature import RegexTokenizer, StopWordsRemover, CountVectorizer
 from pyspark.ml.classification import LogisticRegression
 import nltk
 from nltk.corpus import stopwords
-from data_manipulation import get_clean_data
+from data_manipulation import get_clean_ml_dataset
 
-data_df = get_clean_data()
+data_df = get_clean_ml_dataset()
+
+class_count = data_df.groupBy(
+    "label").count()
+print('--------------------CLASS COUNT -------------------------------')
+class_count.show(10)
 # regular expression tokenizer
 regexTokenizer = RegexTokenizer(
     inputCol="full_text", outputCol="words", pattern="\\W")
@@ -38,8 +43,8 @@ print("Test Dataset Count: " + str(testData.count()))
 lr = LogisticRegression(maxIter=20, regParam=0.3, elasticNetParam=0)
 lrModel = lr.fit(trainingData)
 predictions = lrModel.transform(testData)
-predictions.select("full_text", "sentiment", "probability", "label", "prediction", "filtered") \
-    .show(n=10, truncate=30)
+# predictions.select("full_text", "sentiment", "probability", "label", "prediction", "filtered") \
+#     .show(n=10, truncate=30)
 
 evaluator = MulticlassClassificationEvaluator(predictionCol="prediction")
 print("The accuracy of the evaluator model is " +

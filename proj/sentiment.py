@@ -1,0 +1,4 @@
+from data_manipulation import get_timestamped_tweet_sentiment_df
+
+
+get_timestamped_tweet_sentiment_df(1)
