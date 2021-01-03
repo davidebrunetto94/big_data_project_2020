@@ -1,6 +1,6 @@
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StringType, FloatType, StructField, IntegerType, LongType
+from pyspark.sql.types import StructType, StringType, FloatType, StructField, IntegerType, LongType, DateType
 from pyspark.sql import SQLContext
 from pyspark.sql.functions import regexp_replace, col, asc
 import pyspark
@@ -9,7 +9,7 @@ findspark.init()
 findspark.find()
 
 
-def get_timestamped_tweet_sentiment_df(n):
+def get_avg_tweet_sentiment_df(n):
     import time
     spark, _ = get_spark_sql_context()
     tweets_sentiment_df = get_tweets_sentiment_df(n)
@@ -19,10 +19,16 @@ def get_timestamped_tweet_sentiment_df(n):
     timestamp_from_id_udf = spark.udf.register(
         "timestamp_from_id", timestamp_from_id)
 
-    timestamped_tweets_sentiment_df = tweets_sentiment_df.withColumn(
+    tweets_sentiment_df = tweets_sentiment_df.withColumn(
         'timestamp', timestamp_from_id_udf(col('tweet_id')))
-    timestamped_tweets_sentiment_df.show(5)
-    return timestamped_tweets_sentiment_df
+
+    tweets_sentiment_df = tweets_sentiment_df.withColumn(
+        'timestamp', col('timestamp').cast(DateType()))
+
+    avg_sentiment_df = tweets_sentiment_df.groupBy(
+        'timestamp').avg('sentiment').sort(col('timestamp'))
+    avg_sentiment_df.show(30)
+    return avg_sentiment_df
 
 
 def timestamp_from_id(id):
@@ -30,7 +36,7 @@ def timestamp_from_id(id):
     shifted_id = id >> 22  # applying right shift operator to the tweet ID
     timestamp = shifted_id + 1288834974657
     file_time = dt.datetime.fromtimestamp(timestamp/1000)
-    return file_time.strftime("%d %m %Y")
+    return file_time.strftime('%Y-%m-%d')
 
 
 def get_spark_sql_context():
