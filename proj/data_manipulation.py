@@ -108,6 +108,40 @@ def get_tweets_sentiment_df(n):
     return tweets_sentiment_df
 
 
+def get_tweet_count_df():
+    spark, _ = get_spark_sql_context()
+    dim_dataset = 1
+
+    timestamp_from_id_udf = spark.udf.register(
+        "timestamp_from_id", timestamp_from_id)
+
+    schema = StructType([
+        StructField('tweet_id', LongType(), True),
+        StructField('timestamp', DateType(), True)
+    ])
+
+    tweets_df = spark.createDataFrame(
+        spark.sparkContext.emptyRDD(), schema)
+
+    for i in range(1, dim_dataset+1):
+        if i < 10:
+            ind = '0' + str(i)
+        else:
+            ind = str(i)
+        path = r'C:\Users\Davide\id_tweets\id_tweets_' + ind + '.txt'
+        df = spark.read.text(path).withColumnRenamed('value', 'tweet_id')
+        df = df.withColumn('tweet_id', col('tweet_id').cast(LongType()))
+        df = df.withColumn(
+            'timestamp', timestamp_from_id_udf(col('tweet_id')))
+        df = df.withColumn('timestamp', col('timestamp').cast(DateType()))
+        df.show(5)
+        df.printSchema()
+        tweets_df = tweets_df.union(df)
+
+    tweets_df.printSchema()
+    tweets_df.show(50)
+
+
 def get_clean_ml_dataset():
     spark, _ = get_spark_sql_context()
     n_datasets = 10  # the number of datasets we want to use
