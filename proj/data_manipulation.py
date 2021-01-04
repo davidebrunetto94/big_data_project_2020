@@ -27,7 +27,7 @@ def get_avg_tweet_sentiment_df(n):
 
     avg_sentiment_df = tweets_sentiment_df.groupBy(
         'timestamp').avg('sentiment').sort(col('timestamp'))
-    avg_sentiment_df.show(30)
+    # avg_sentiment_df.show(30)
     return avg_sentiment_df
 
 
@@ -77,8 +77,8 @@ def get_hydrated_tweets_dataset(n):
         # print(df_small.count())
         hydrated_tweets_df = hydrated_tweets_df.union(df_small)
 
-    print("-----------------------------HYDRATED TWEETS ---------------------------------")
-    hydrated_tweets_df.show(20)
+    # print("-----------------------------HYDRATED TWEETS ---------------------------------")
+    # hydrated_tweets_df.show(20)
     return hydrated_tweets_df
 
 
@@ -103,14 +103,14 @@ def get_tweets_sentiment_df(n):
             .load(path)
         tweets_sentiment_df = tweets_sentiment_df.union(df_small)
 
-    print("----------------------------- TWEETS SENTIMENT ---------------------------------")
-    tweets_sentiment_df.show(5)
+    # print("----------------------------- TWEETS SENTIMENT ---------------------------------")
+    # tweets_sentiment_df.show(5)
     return tweets_sentiment_df
 
 
 def get_tweet_count_df():
     spark, _ = get_spark_sql_context()
-    dim_dataset = 1
+    dim_dataset = 86
 
     timestamp_from_id_udf = spark.udf.register(
         "timestamp_from_id", timestamp_from_id)
@@ -134,12 +134,11 @@ def get_tweet_count_df():
         df = df.withColumn(
             'timestamp', timestamp_from_id_udf(col('tweet_id')))
         df = df.withColumn('timestamp', col('timestamp').cast(DateType()))
-        df.show(5)
-        df.printSchema()
         tweets_df = tweets_df.union(df)
 
-    tweets_df.printSchema()
-    tweets_df.show(50)
+    tweets_df = tweets_df.groupBy('timestamp').count().sort(asc('timestamp'))
+    # tweets_df.show(50)
+    return tweets_df
 
 
 def get_clean_ml_dataset():
@@ -150,15 +149,15 @@ def get_clean_ml_dataset():
     tweets_sentiment_df = get_tweets_sentiment_df(n_datasets)
     joined_df = hydrated_tweets_df.join(
         tweets_sentiment_df, hydrated_tweets_df['id_str'] == tweets_sentiment_df['tweet_id'], 'inner')
-    print("----------------------------- JOINED DF ---------------------------------")
-    joined_df.show(5)
+    # print("----------------------------- JOINED DF ---------------------------------")
+    # joined_df.show(5)
 
     # We drop the columns we don't need in our joined dataset
     drop_columns = ['id_str', 'tweet_id']
     data_df = joined_df.select(
         [column for column in joined_df.columns if column not in drop_columns])
-    print("----------------------------- DATA DF ---------------------------------")
-    data_df.show(5)
+    # print("----------------------------- DATA DF ---------------------------------")
+    # data_df.show(5)
 
     # registering the UDF
     discretize_sentiment_udf = spark.udf.register(
@@ -202,12 +201,13 @@ def discretize_sentiment(sentiment) -> int:
     if(sentiment > 0.5):
         return 3
 
-
 # This function returns a stratified sampling of a dataset with the size of around dim_sample. If there are not enough elements from the least
 # popular class to make the sample with dim_sample, the size of the sample returned will be 4 times the number of elements from the least popular class
+
+
 def stratified_sampling(dim_sample, dataset):
-    # This should be dim_sample / num_classes computed as the distinct values for the column "label", but we hardcode 4 to save time
-    num_element_per_class = dim_sample / 4
+    num_classes = 4
+    num_element_per_class = dim_sample / num_classes
 
     class_count_asc = dataset.groupBy(
         "label").count().sort(asc('count'))

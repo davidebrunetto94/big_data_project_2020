@@ -2,8 +2,8 @@ from data_manipulation import get_spark_sql_context
 import os
 import time
 import re
-start_time = time.time()
 
+start_time = time.time()
 dataset_dim = 86
 spark, sqlContext = get_spark_sql_context()
 for i in range(1, dataset_dim+1):
