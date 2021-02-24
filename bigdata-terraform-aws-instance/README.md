@@ -31,10 +31,10 @@ Dalla shell digitare:
 $ aws configure
 ```
 verranno richiesti:
-AWS Access Key ID
-Secret Access Key
-Default region name (ad es: “us-east-2”)
-Default output format (ignorare e premere INVIO)
+* AWS Access Key ID
+* Secret Access Key
+* Default region name (ad es: “us-east-2”)
+* Default output format (ignorare e premere INVIO)
 
 
 ## Installazione Terraform
