@@ -30,7 +30,7 @@ Dalla shell digitare:
 ```
 $ aws configure
 ```
-verranno richiesti: 
+verranno richiesti:
 AWS Access Key ID
 Secret Access Key
 Default region name (ad es: “us-east-2”)
