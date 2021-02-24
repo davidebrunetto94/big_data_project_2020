@@ -1,102 +1,119 @@
-# Hadoop/Spark with Terraform on AWS
+# AWS - Terraform support
 
-This project create an Hadoop and Spark cluster on Amazon AWS with Terraform
-
-1. [Variables](#Variables)
-2. [Software version](#Software-version)
-3. [Project Structure](#Project-Structure)
-4. [How to](#How-to)
-5. [See also](#See-also)
-
-## Variables
-
-| Name           | Description                                | Default               |
-|----------------|--------------------------------------------|-----------------------|
-| region         | AWS region                                 | us-east-1             |
-| access_key     | AWS access key                             |                       |
-| secret_key     | AWS secret key                             |                       |
-| token          | AWS token                                  | null                  |
-| instance_type  | AWS instance type                          | m5.xlarge             |
-| ami_image      | AWS AMI image                              | ami-0885b1f6bd170450c |
-| key_name       | Name of the key pair used between nodes    | localkey              |
-| key_path       | Path of the key pair used between nodes    | .                     |
-| aws_key_name   | AWS key pair used to connect to nodes      | amzkey                |
-| amz_key_path   | AWS key pair path used to connect to nodes | amzkey.pem            |
-| namenode_count | Namenode count                             | 1                     |
-| datanode_count | Datanode count                             | 3                     |
-| ips            | Default private ips used for nodes         | See variables.tf      |
-| hostnames      | Default private hostnames used for nodes   | See variables.tf      |
+Premessa: questa guida è stata testata su un account AWS free-tier. 
 
 
-## Software version
-* Default AMI image: ami-0885b1f6bd170450c (Ubuntu 20.04, amd64, hvm-ssd)
-* Spark: 3.0.1
-* Hadoop: 2.7.7
-* Python: last available (currently 3.8)
-* Java: openjdk 8u275 jdk
-
-## Project Structure
-
-* app/: folder where you can put your application, it will copied to the namenode
-* install-all.sh: script which is executed in every node, it install hadoop/spark and do all the configuration for you
-* main.tf: definition of the resources 
-* output.tf: terraform output declaration
-* variables.tf: terraform variable declaration
+1. [Contenuto del pacchetto](#Contenuto-del-pacchetto)
+2. [Installazione AWS CLI](#Installazione-AWS-CLI)
+3. [Installazione Terraform](#Installazione-Terraform)
+4. [Preparazione Script](#Preparazione-Script)
+5. [Esecuzione Script](#Esecuzione-Script)
+6. [Eliminare l'ambiente](#Eliminare-l'ambiente)
 
 
-## How to
+## Contenuto del pacchetto
+* main.tf: script terraform che crea l'ambiente su AWS
+* variables.tf: contiene i parametri di configurazione per lo script
+* install.sh: script che installa e configura i nodi con il software necessario
 
-0. Download and install Terraform
-1. Download the project and unzip it
-2. Open the terraform project folder "spark-terraform-master/"
-3. Create a file named "terraform.tfvars" and paste this:
+
+## Installazione AWS CLI
+L’installazione di AWS CLI è un requisito indispensabile per l’utilizzo di Terraform con AWS.
+Scaricare ed installare AWS CLI v2 per il proprio computer (https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
+
+Prima di proseguire è necessario possedere le seguenti informazioni relative al proprio account AWS: AWS Access Key ID e Secret Access Key.
+Queste informazioni sono recuperabili da qui:
+https://console.aws.amazon.com/iam/home?#/security_credentials.
+
+
+Dalla shell digitare:
 ```
-access_key="<YOUR AWS ACCESS KEY>"
-secret_key="<YOUR AWS SECRET KEY>"
-token="<YOUR AWS TOKEN>"
+$ aws configure
 ```
-**Note:** without setting the other variables (you can find it on variables.tf), terraform will create a cluster on region "us-east-1", with 1 namenode, 3 datanode and with an instance type of m5.xlarge.
+verranno richiesti: AWS Access Key ID, Secret Access Key, Default region name e Default output format.
 
-3. Put your application files into the "app" terraform project folder 
-4. Open a terminal and generate a new ssh-key
+
+## Installazione Terraform
+Seguendo la guida ufficiale (https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started) ci sono stati alcuni problemi sul flusso di installazione. Infatti è stato prerequisito fondamentale installare preventivamente i seguenti software:
+
+* Homebrew:
 ```
-ssh-keygen -f <PATH_TO_SPARK_TERRAFORM>/spark-terraform-master/localkey
-```
-Where `<PATH_TO_SPARK_TERRAFORM>` is the path to the /spark-terraform-master/ folder (e.g. /home/user/)
-
-5. Login to AWS and create a key pairs named **amzkey** in **PEM** file format. Follow the guide on [AWS DOCS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair). Download the key and put it in the spark-terraform-master/ folder.
-
-6. Open a terminal and go to the spark-terraform-master/ folder, execute the command
- ```
- terraform init
- terraform apply
- ```
- After a while (wait!) it should print some public DNS in a green color, these are the public dns of your instances.
-
-7. Connect via ssh to all your instances via
- ```
-ssh -i <PATH_TO_SPARK_TERRAFORM>/spark-terraform-master/amzkey.pem ubuntu@<PUBLIC DNS>
- ```
-
-8. Execute on the master (one by one):
- ```
-$HADOOP_HOME/sbin/start-dfs.sh
-$HADOOP_HOME/sbin/start-yarn.sh
-$HADOOP_HOME/sbin/mr-jobhistory-daemon.sh start historyserver' > /home/ubuntu/hadoop-start-master.sh
-$SPARK_HOME/sbin/start-master.sh
-$SPARK_HOME/sbin/start-slaves.sh spark://s01:7077
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-9. You are ready to execute your app! Execute this command on the master
+* XCode:
 ```
-/opt/spark-3.0.1-bin-hadoop2.7/bin/spark-submit --master spark://s01:7077  --executor-cores 2 --executor-memory 14g yourfile.py
+$ xcode-select --install
 ```
 
-10. Remember to do `terraform destroy` to delete your EC2 instances
+* Gcc:
+```
+$ brew install --build-from-source gcc
+```
 
-**Note:** The steps from 0 to 5 (included) are needed only on the first execution ever
+Dopodiché è possibile seguire la guida ed eseguire quindi i seguenti comandi:
+```
+$ brew tap hashicorp/tap
+
+$ brew install hashicorp/tap/terraform
+
+$ brew upgrade hashicorp/tap/terraform
+```
+
+Verificare l’installazione con:
+```
+terraform -help
+```
 
 
-## See also
- * [TransE PySpark](https://github.com/conema/TransE-pyspark): an application using this project
- * [hadoop-spark-cluster-deployment](https://github.com/kostistsaprailis/hadoop-spark-cluster-deployment): the starting point of this project
+## Preparazione Script
+Posizionarsi nella cartella “bigdata-terraform-aws-instance” .
+
+Modificare il file ```variables.tf``` per cambiare i parametri secondo le proprie esigenze, in particolare:
+* ```region:``` la regione in cui istanziare le macchine,
+* ```instance_type:``` il tipo di macchine da istanziare (t2.micro è il tipo offerto dall’account aws free tier),
+* ```ami_image:``` specifica l’immagine del SO desiderato,
+* ```numOfSlaves:``` il numero di nodi slave,
+* ```mgmt_jump_private_ips:``` l’elenco degli indirizzi ip privati appartenenti alla propria sottorete aws.
+Attenzione: se vengono modificato questi indirizzi ip è necessario che siano modificati anche sul file install.sh dalla riga 20 alla riga 25.
+
+Generiamo una chiave SSH con questo comando:
+```ssh-keygen -f <terraform_directory>/localkey```
+
+Generiamo una coppia di chiavi dall’interfaccia di AWS:
+Andare nel servizio EC2.
+Sul menù a sinistra cercare la voce “Rete e sicurezza” in cui sarà possibile cliccare su “Coppie di chiavi”.
+Cliccare sul bottone in alto a destra  “crea una coppia di chiavi”, inserire il nome “chiave_aws”, scegliere il formato .pem e proseguire alla creazione del file.
+Salvare il file nella cartella di terraform.
+
+
+E’ ora possibile procedere con l’esecuzione dello script.
+
+
+## Esecuzione Script
+Digitare il seguente comando per inizializzare la directory:
+```terraform init```
+
+Dopodichè è possibile lanciare il comando per creare ed avviare le istanze su AWS:
+```terraform apply```
+
+Quando verrà richiesto digitare la risposta ```yes```.
+
+Attendere il completamento delle azioni.
+
+Verranno create le istanze EC2 in cui verrà installato tutto il software necessario in automatico (java, spark-3.0.1, hadoop-2.7.7, Python 3.8) grazie allo script bash install.sh che verrà avviato sulle istanze.
+Le istanze saranno nominate come master_1 e poi slave_1, slave_2, ecc…
+
+Al termine verranno visualizzati col colore verde gli indirizzi DNS del master e degli slave.
+
+Con questi indirizzi sarà possibile accedere alle istanze tramite il comando:
+```ssh -i <terraform_directory>/chiave_aws.pem ubuntu@<DNS_pubblico>```
+
+
+## Eliminare l'ambiente
+Qualora volessimo annullare l’esecuzione del comando ```apply``` eseguiamo:
+```terraform destroy```
+
+Quando verrà richiesto digitare la risposta ```yes```.
+
+Lo stesso comando possiamo utilizzarlo per eliminare le istanze dal momento in cui non ci serviranno più.
