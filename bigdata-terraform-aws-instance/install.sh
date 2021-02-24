@@ -63,7 +63,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
   <property>
     <name>fs.defaultFS</name>
-    <value>hdfs://s01:9000</value>
+    <value>hdfs://master_1:9000</value>
   </property>
 </configuration>' | sudo tee /opt/hadoop-2.7.7/etc/hadoop/core-site.xml > /dev/null
 
@@ -94,7 +94,7 @@ echo '<?xml version="1.0"?>
   </property>
   <property>
     <name>yarn.resourcemanager.hostname</name>
-    <value>s01</value>
+    <value>master_1</value>
   </property>
 </configuration>' | sudo tee /opt/hadoop-2.7.7/etc/hadoop/yarn-site.xml > /dev/null
 
@@ -120,7 +120,7 @@ echo '<?xml version="1.0"?>
 <configuration>
   <property>
     <name>mapreduce.jobtracker.address</name>
-    <value>s01:54311</value>
+    <value>master_1:54311</value>
   </property>
   <property>
     <name>mapreduce.framework.name</name>
@@ -197,7 +197,7 @@ cp conf/spark-env.sh.template conf/spark-env.sh
 # spark configuration files
 echo '
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-export SPARK_MASTER_HOST=s01
+export SPARK_MASTER_HOST=master_1
 export HADOOP_CONF_DIR=/opt/hadoop-2.7.7/etc/hadoop
 export HADOOP_HOME=/opt/hadoop-2.7.7' | sudo tee --append conf/spark-env.sh > /dev/null
 
@@ -215,4 +215,4 @@ echo -e '$HADOOP_HOME/sbin/start-dfs.sh && $HADOOP_HOME/sbin/start-yarn.sh && $H
 
 echo '$SPARK_HOME/sbin/start-master.sh' > /home/ubuntu/spark-start-master.sh
 
-echo '$SPARK_HOME/sbin/start-slave.sh spark://s01:7077' > /home/ubuntu/spark-start-slave.sh
+echo '$SPARK_HOME/sbin/start-slave.sh spark://master_1:7077' > /home/ubuntu/spark-start-slave.sh
