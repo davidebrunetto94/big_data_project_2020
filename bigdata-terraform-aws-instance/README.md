@@ -74,6 +74,10 @@ Modificare il file ```variables.tf``` per cambiare i parametri secondo le propri
 * ```instance_type:``` il tipo di macchine da istanziare (t2.micro è il tipo offerto dall’account aws free tier),
 * ```ami_image:``` specifica l’immagine del SO desiderato,
 * ```numOfSlaves:``` il numero di nodi slave,
+* ```subnetId:``` specifica l’id della sottorete da utilizzare per gli indirizzi privati dei nodi.
+Per trovare questa informazione, accedere al servizio AWS VPC, sul menù a sinistra aprire VIRTUAL PRIVATE CLOUD e selezionare “Subnets”: appariranno tutte le sottoreti. Se non ce ne sono, crearne una.
+Annotare il subnet id da utilizzare nella variabile dello script terraform.
+Nel campo IPv4 CIDR troviamo l’indirizzo della sottorete: gli indirizzi dei nostri nodi devono essere compresi all’interno di questa sottorete.
 * ```mgmt_jump_private_ips:``` l’elenco degli indirizzi ip privati appartenenti alla propria sottorete aws.
 Attenzione: se vengono modificato questi indirizzi ip è necessario che siano modificati anche sul file install.sh dalla riga 20 alla riga 25.
 
