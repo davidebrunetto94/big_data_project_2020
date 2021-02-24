@@ -30,11 +30,18 @@ Dalla shell digitare:
 ```
 $ aws configure
 ```
-verranno richiesti: AWS Access Key ID, Secret Access Key, Default region name e Default output format.
+verranno richiesti: 
+AWS Access Key ID
+Secret Access Key
+Default region name (ad es: “us-east-2”)
+Default output format (ignorare e premere INVIO)
 
 
 ## Installazione Terraform
-Seguendo la guida ufficiale (https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started) ci sono stati alcuni problemi sul flusso di installazione. Infatti è stato prerequisito fondamentale installare preventivamente i seguenti software:
+L’installazione di terraform è stata eseguita su un computer Macintosh attraverso il terminale e Homebrew.
+Seguendo la guida ufficiale è possibile trovare la procedura per il sistema operativo in uso (https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started).
+Per MacOs è stato prerequisito fondamentale installare i seguenti software:
+
 
 * Homebrew:
 ```
