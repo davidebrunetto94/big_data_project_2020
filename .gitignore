@@ -348,3 +348,10 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+bigdata-terraform-aws-instance/localkey
+*.pub
+*.tfstate
+*.backup
+bigdata-terraform-aws-instance/chiave_aws.pem
+bigdata-terraform-aws-instance/.terraform/providers/registry.terraform.io/hashicorp/aws/3.29.1/darwin_amd64/terraform-provider-aws_v3.29.1_x5
+bigdata-terraform-aws-instance/.terraform.lock.hcl

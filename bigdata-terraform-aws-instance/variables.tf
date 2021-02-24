@@ -28,6 +28,11 @@ variable "nomeChiaveAws" {
     default = "chiave_aws"
 }
 
+variable "nomeChiaveLocale" {
+    type = string
+    default = "localkey"
+}
+
 variable "pathChiaveAws" {
     type = string
     default = "chiave_aws.pem"
@@ -44,17 +49,17 @@ variable "numOfSlaves" {
 }
 
 variable "mgmt_jump_private_ips_master" {
-    default = "172.31.32.101"
+    default = "172.31.16.101"
 }
 
 variable "mgmt_jump_private_ips" {
     default = {
-        "0" = "172.31.32.102"
-        "1" = "172.31.32.103"
-        "2" = "172.31.32.104"
-        "3" = "172.31.32.105"
-        "4" = "172.31.32.106"
-        "5" = "172.31.32.107"
+        "0" = "172.31.16.102"
+        "1" = "172.31.16.103"
+        "2" = "172.31.16.104"
+        "3" = "172.31.16.105"
+        "4" = "172.31.16.106"
+        "5" = "172.31.16.107"
     }
 }
 

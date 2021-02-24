@@ -17,12 +17,12 @@ sudo apt-get -y install openjdk-8-jdk
 
 # master and slaves ip (you can add more if needed)
 echo '
-172.31.32.101 master_1
-172.31.32.102 slave_1
-172.31.32.103 slave_2
-172.31.32.104 slave_3
-172.31.32.105 slave_4
-172.31.32.106 slave_5' | sudo tee --append /etc/hosts > /dev/null
+172.31.16.101 master_1
+172.31.16.102 slave_1
+172.31.16.103 slave_2
+172.31.16.104 slave_3
+172.31.16.105 slave_4
+172.31.16.106 slave_5' | sudo tee --append /etc/hosts > /dev/null
 
 sudo chmod 700 /home/ubuntu/.ssh
 sudo chmod 600 /home/ubuntu/.ssh/id_rsa
@@ -161,14 +161,14 @@ echo '<?xml version="1.0" encoding="UTF-8"?>
 </configuration>' | sudo tee /opt/hadoop-2.7.7/etc/hadoop/hdfs-site.xml > /dev/null
 
 echo '
-s01' | sudo tee --append /opt/hadoop-2.7.7/etc/hadoop/masters > /dev/null
+slave_1' | sudo tee --append /opt/hadoop-2.7.7/etc/hadoop/masters > /dev/null
 
 echo '
-s02
-s03
-s04
-s05
-s06' | sudo tee /opt/hadoop-2.7.7/etc/hadoop/slaves > /dev/null
+slave_2
+slave_3
+slave_4
+slave_5
+slave_6' | sudo tee /opt/hadoop-2.7.7/etc/hadoop/slaves > /dev/null
 
 sudo sed -i -e 's/export\ JAVA_HOME=\${JAVA_HOME}/export\ JAVA_HOME=\/usr\/lib\/jvm\/java-8-openjdk-amd64/g' /opt/hadoop-2.7.7/etc/hadoop/hadoop-env.sh
 
@@ -180,16 +180,16 @@ sudo chown -R ubuntu /opt/hadoop-2.7.7
 
 # spark installation
 cd /opt/
-sudo wget https://downloads.apache.org/spark/spark-3.0.1/spark-3.0.1-bin-hadoop2.7.tgz > /dev/null
-sudo tar -xvzf spark-3.0.1-bin-hadoop2.7.tgz > /dev/null
+sudo wget https://downloads.apache.org/spark/spark-3.0.2/spark-3.0.2-bin-hadoop2.7.tgz > /dev/null
+sudo tar -xvzf spark-3.0.2-bin-hadoop2.7.tgz > /dev/null
 
 echo '
-export SPARK_HOME=/opt/spark-3.0.1-bin-hadoop2.7
+export SPARK_HOME=/opt/spark-3.0.2-bin-hadoop2.7
 export PATH=$PATH:$SPARK_HOME/bin' | sudo tee --append /home/ubuntu/.bashrc > /dev/null
 
-sudo chown -R ubuntu /opt/spark-3.0.1-bin-hadoop2.7
+sudo chown -R ubuntu /opt/spark-3.0.2-bin-hadoop2.7
 
-cd spark-3.0.1-bin-hadoop2.7
+cd spark-3.0.2-bin-hadoop2.7
 
 cp conf/spark-env.sh.template conf/spark-env.sh  
 
@@ -202,11 +202,11 @@ export HADOOP_CONF_DIR=/opt/hadoop-2.7.7/etc/hadoop
 export HADOOP_HOME=/opt/hadoop-2.7.7' | sudo tee --append conf/spark-env.sh > /dev/null
 
 echo '
-s02
-s03
-s04
-s05
-s06' | sudo tee --append conf/slaves > /dev/null
+slave_2
+slave_3
+slave_4
+slave_5
+slave_6' | sudo tee --append conf/slaves > /dev/null
 
 cp conf/spark-defaults.conf.template conf/spark-defaults.conf
 

@@ -12,8 +12,8 @@ provider "aws" {
     profile = var.profile
 }
 
-resource "aws_security_group" "web-node" {
-    name = "web-node"
+resource "aws_security_group" "webnode" {
+    name = "webnode"
     description = "Web Security Group"
         ingress {
         from_port = 22
@@ -47,7 +47,9 @@ resource "aws_instance" "master1" {
         Name = "master_1"
     }
     
-    security_groups = [aws_security_group.web-node.name]
+    subnet_id = "subnet-915144eb"
+
+    vpc_security_group_ids = [aws_security_group.webnode.id]
 
     private_ip      = var.mgmt_jump_private_ips_master
 
@@ -64,20 +66,20 @@ resource "aws_instance" "master1" {
     }
 
     provisioner "local-exec" {
-        command = "cat ./${var.nomeChiaveAws}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/authorized_keys'"
+        command = "cat ./${var.nomeChiaveLocale}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/authorized_keys'"
     }
     provisioner "local-exec" {
-        command = "cat ./${var.nomeChiaveAws}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa.pub'"
+        command = "cat ./${var.nomeChiaveLocale}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa.pub'"
     }
     provisioner "local-exec" {
-        command = "cat ./${var.nomeChiaveAws} | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa'"
+        command = "cat ./${var.nomeChiaveLocale} | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa'"
     }
 
     # execute the configuration script
     provisioner "remote-exec" {
         inline = [
-            "chmod +x /tmp/install-all.sh",
-            "/bin/bash /tmp/install-all.sh",
+            "chmod +x /tmp/install.sh",
+            "/bin/bash /tmp/install.sh",
             "/opt/hadoop-2.7.7/bin/hadoop namenode -format"
         ]
         connection {
@@ -99,8 +101,10 @@ resource "aws_instance" "slave1" {
     tags = {
         Name = lookup(var.mgmt_jump_hostnames, count.index)
     }
+
+    subnet_id = "subnet-915144eb"
     
-    security_groups = [aws_security_group.web-node.name]
+    vpc_security_group_ids = [aws_security_group.webnode.id]
 
     private_ip = lookup(var.mgmt_jump_private_ips, count.index)
 
@@ -117,13 +121,13 @@ resource "aws_instance" "slave1" {
     }
 
     provisioner "local-exec" {
-        command = "cat ./${var.nomeChiaveAws}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/authorized_keys'"
+        command = "cat ./${var.nomeChiaveLocale}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/authorized_keys'"
     }
     provisioner "local-exec" {
-        command = "cat ./${var.nomeChiaveAws}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa.pub'"
+        command = "cat ./${var.nomeChiaveLocale}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa.pub'"
     }
     provisioner "local-exec" {
-        command = "cat ./${var.nomeChiaveAws} | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa'"
+        command = "cat ./${var.nomeChiaveLocale} | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa'"
     }
 
     provisioner "remote-exec" {
