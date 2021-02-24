@@ -52,6 +52,10 @@ variable "mgmt_jump_private_ips_master" {
     default = "172.31.16.101"
 }
 
+variable "subnetId" {
+    default = "subnet-915144eb"
+}
+
 variable "mgmt_jump_private_ips" {
     default = {
         "0" = "172.31.16.102"

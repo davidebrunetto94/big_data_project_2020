@@ -47,7 +47,7 @@ resource "aws_instance" "master1" {
         Name = "master_1"
     }
     
-    subnet_id = "subnet-915144eb"
+    subnet_id = var.subnetId
 
     vpc_security_group_ids = [aws_security_group.webnode.id]
 
@@ -102,7 +102,7 @@ resource "aws_instance" "slave1" {
         Name = lookup(var.mgmt_jump_hostnames, count.index)
     }
 
-    subnet_id = "subnet-915144eb"
+    subnet_id = var.subnetId
     
     vpc_security_group_ids = [aws_security_group.webnode.id]
 
