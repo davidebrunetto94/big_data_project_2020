@@ -1,18 +1,20 @@
-from pyspark.ml.evaluation import MulticlassClassificationEvaluator
-from pyspark.ml.feature import OneHotEncoder, StringIndexer, VectorAssembler
-from pyspark.ml import Pipeline
-from pyspark.ml.feature import RegexTokenizer, StopWordsRemover, CountVectorizer
-from pyspark.ml.classification import LogisticRegression
 import nltk
 from nltk.corpus import stopwords
+from pyspark.ml import Pipeline
+from pyspark.ml.classification import (LinearSVC, LogisticRegression,
+                                       NaiveBayes, OneVsRest)
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+from pyspark.ml.feature import (IDF, CountVectorizer, HashingTF,
+                                RegexTokenizer, StopWordsRemover)
+from pyspark.mllib.classification import SVMModel, SVMWithSGD
+from pyspark.mllib.evaluation import MulticlassMetrics
+from pyspark.mllib.util import MLUtils
+
 from data_manipulation import get_clean_ml_dataset
 
+# We get the clean dataset for machine learning
 data_df = get_clean_ml_dataset()
 
-class_count = data_df.groupBy(
-    "label").count()
-print('--------------------CLASS COUNT -------------------------------')
-class_count.show(10)
 # regular expression tokenizer
 regexTokenizer = RegexTokenizer(
     inputCol="full_text", outputCol="words", pattern="\\W")
@@ -24,37 +26,90 @@ english_stopwords = stopwords.words('english') + ["RT", "rt", "FAV", "fav"]
 stopwordsRemover = StopWordsRemover(
     inputCol="words", outputCol="filtered").setStopWords(english_stopwords)
 
+# This part shows two different methods for the creation of the vector of features that will be used to
+# classify the tweets, the first is a simple count vector, while the second is a tf-idf vector.
+# in the end, we chose the second one as it gave the best accuracy.
+
 # bag of words count
-countVectors = CountVectorizer(
-    inputCol="filtered", outputCol="features", vocabSize=10000, minDF=5)
+# countVectors = CountVectorizer(
+#     inputCol="filtered", outputCol="features", vocabSize=10000, minDF=5)
 
+# tf-idf vector
+hashingTF = HashingTF(inputCol="filtered",
+                      outputCol="rawFeatures", numFeatures=10000)
+idf = IDF(inputCol="rawFeatures", outputCol="features", minDocFreq=5)
 
-# we create a pipeline for the ML process
-pipeline = Pipeline(stages=[regexTokenizer, stopwordsRemover, countVectors])
-# Fit the pipeline to training documents.
+# creation of the pipeline
+pipeline = Pipeline(stages=[regexTokenizer, stopwordsRemover, hashingTF, idf])
+# Fit of the pipeline to the training documents
 pipelineFit = pipeline.fit(data_df)
 dataset = pipelineFit.transform(data_df)
-dataset.show(5)
 
+# We split the dataset into test set and training set
 (trainingData, testData) = dataset.randomSplit([0.7, 0.3], seed=0)
-print("Training Dataset Count: " + str(trainingData.count()))
-print("Test Dataset Count: " + str(testData.count()))
+trainingData.show(5)
 
-lr = LogisticRegression(maxIter=20, regParam=0.3, elasticNetParam=0)
-lrModel = lr.fit(trainingData)
-predictions = lrModel.transform(testData)
+# print("Training Dataset Count: " + str(trainingData.count()))
+# print("Test Dataset Count: " + str(testData.count()))
+
+
+# This part shows two different ML models, the first one is a logistic regression model, the second one is a Naive Bayes
+# model. We chose the second model because it gave the best results.
+
+# logistic regression model
+# lr = LogisticRegression(maxIter=20, regParam=0.3, elasticNetParam=0)
+# lrModel = lr.fit(trainingData)
+# predictions = lrModel.transform(testData)
 # predictions.select("full_text", "sentiment", "probability", "label", "prediction", "filtered") \
 #     .show(n=10, truncate=30)
+# lr = LogisticRegression(maxIter=10, regParam=0.3, elasticNetParam=0)
+# lrModel = lr.fit(trainingData)
+# predictions = lrModel.transform(testData)
 
-evaluator = MulticlassClassificationEvaluator(predictionCol="prediction")
-print("The accuracy of the evaluator model is " +
-      str(evaluator.evaluate(predictions)))
+# Naive Bayes model
+# nb = NaiveBayes(smoothing=2)
+# model = nb.fit(trainingData)
+# predictions = model.transform(testData).rdd.map(lambda x: (float(x[3]), x[10]))
 
-print('F1-Score ', evaluator.evaluate(predictions,
-                                      {evaluator.metricName: 'f1'}))
-print('Precision ', evaluator.evaluate(predictions,
-                                       {evaluator.metricName:                    'weightedPrecision'}))
-print('Recall ', evaluator.evaluate(predictions,
-                                    {evaluator.metricName: 'weightedRecall'}))
-print('Accuracy ', evaluator.evaluate(predictions,
-                                      {evaluator.metricName: 'accuracy'}))
+# model = SVMWithSGD.train(trainingData, iterations=100)
+# predictions = model.predict(testData)
+
+# This part shows the third classifier, a linear SVC of type one vs rest.
+# Definition of the binary classifier
+lsvc = LinearSVC(maxIter=1, regParam=0.1).setTol(5)
+# Definition of the OVR classifier
+ovr = OneVsRest(classifier=lsvc)
+# train the multiclass model.
+ovrModel = ovr.fit(trainingData)
+# score the model on test data.
+# predictions = ovrModel.transform(testData).rdd.map(
+#     lambda x: (float(x[3]), x[9]))
+
+predictions = ovrModel.transform(testData)
+
+# This part evaluates the performance of the model. We used precision, recall and F1-Measure as metrics.
+# metrics = MulticlassMetrics(predictions)
+# precision = metrics.weightedPrecision
+# recall = metrics.weightedRecall
+# f1Score = metrics.weightedFMeasure()
+# print("Precision = %s" % precision)
+# print("Recall = %s" % recall)
+# print("F1 Score = %s" % f1Score)
+
+# obtain evaluator.
+evaluator_acc = MulticlassClassificationEvaluator(metricName="accuracy")
+evaluator_prec = MulticlassClassificationEvaluator(
+    metricName="weightedPrecision")
+evaluator_recall = MulticlassClassificationEvaluator(
+    metricName="weightedRecall")
+evaluator_f1Score = MulticlassClassificationEvaluator(metricName="f1")
+
+# compute the classification error on test data.
+accuracy = evaluator_acc.evaluate(predictions)
+precision = evaluator_prec.evaluate(predictions)
+recall = evaluator_recall.evaluate(predictions)
+f1Score = evaluator_f1Score.evaluate(predictions)
+print("Accuracy = %s" % accuracy)
+print("Precision = %s" % precision)
+print("Recall = %s" % recall)
+print("F1 Score = %s" % f1Score)

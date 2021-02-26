@@ -1,14 +1,16 @@
-from data_manipulation import get_avg_tweet_sentiment_df, get_tweet_count_df
-import matplotlib.pyplot as plt
 import datetime
+
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+
+from data_manipulation import get_avg_tweet_sentiment_df, get_tweet_count_df
 
 # Questo modulo si occupa di generare i grafici relativi al sentimento e al volume dei tweet
 # E' necessaria la libreria matplotlib e prende i dati dal modulo data_manipulation
 # che contiene il sentimento medio il count dei tweet giornalieri
 
 
-#SENTIMENTO MEDIO
+# SENTIMENTO MEDIO
 
 sentiment_df = get_avg_tweet_sentiment_df(30)
 x = sentiment_df.select('timestamp').rdd.map(
@@ -24,7 +26,7 @@ f1.clear()
 plt.close(f1)
 
 
-#VOLUME DEI TWEET
+# VOLUME DEI TWEET
 
 count_df = get_tweet_count_df()
 x = count_df.select('timestamp').rdd.map(

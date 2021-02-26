@@ -1,10 +1,11 @@
-from pyspark import SparkContext, SparkConf
-from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StringType, FloatType, StructField, IntegerType, LongType, DateType
-from pyspark.sql import SQLContext
-from pyspark.sql.functions import regexp_replace, col, asc
-import pyspark
 import findspark
+import pyspark
+from pyspark import SparkConf, SparkContext
+from pyspark.sql import SparkSession, SQLContext
+from pyspark.sql.functions import asc, col, regexp_replace
+from pyspark.sql.types import (DateType, FloatType, IntegerType, LongType,
+                               StringType, StructField, StructType)
+
 findspark.init()
 findspark.find()
 
@@ -143,7 +144,7 @@ def get_tweet_count_df():
 
 def get_clean_ml_dataset():
     spark, _ = get_spark_sql_context()
-    n_datasets = 10  # the number of datasets we want to use
+    n_datasets = 1  # the number of datasets we want to use
 
     hydrated_tweets_df = get_hydrated_tweets_dataset(n_datasets)
     tweets_sentiment_df = get_tweets_sentiment_df(n_datasets)
@@ -153,7 +154,7 @@ def get_clean_ml_dataset():
     # joined_df.show(5)
 
     # We drop the columns we don't need in our joined dataset
-    drop_columns = ['id_str', 'tweet_id']
+    drop_columns = ['id_str', 'tweet_id', 'created_at']
     data_df = joined_df.select(
         [column for column in joined_df.columns if column not in drop_columns])
     # print("----------------------------- DATA DF ---------------------------------")
@@ -168,7 +169,7 @@ def get_clean_ml_dataset():
         'label', discretize_sentiment_udf(col('sentiment')))
 
     data_df = regex_data_cleaning(data_df)
-    return stratified_sampling(100000, data_df)
+    return stratified_sampling(10, data_df)
 
 # Function to 'clean' the dataset using regular expressions
 
@@ -222,6 +223,6 @@ def stratified_sampling(dim_sample, dataset):
     classes_distribution = class_count_asc.withColumn('percentage', num_element_per_class / col('count')) \
         .sort(asc('percentage')).select('label', 'percentage').rdd.collectAsMap()
 
-    print(classes_distribution)
+    # print(classes_distribution)
 
     return dataset.sampleBy("label", fractions=classes_distribution, seed=0)

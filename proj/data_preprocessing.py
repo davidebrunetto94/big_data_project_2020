@@ -1,7 +1,8 @@
-from data_manipulation import get_spark_sql_context
 import os
-import time
 import re
+import time
+
+from data_manipulation import get_spark_sql_context
 
 start_time = time.time()
 dataset_dim = 86
