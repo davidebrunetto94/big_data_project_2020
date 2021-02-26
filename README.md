@@ -11,6 +11,7 @@ Finally, tests were performed on data processing starting from two instances and
 This project uses a Kaggle dataset, which contains the IDs of the tweets regarding the current covid-19 pandemic and their sentiment, for two purposes:
 - Analysis, understand how the phenomenon has changed over time, for example by showing the trend in the volume of tweets, or by showing the trend in the value of the "sentiment" field.
 - Classification and prediction, training machine learning models to predict if a tweet expresses a positive or negative feeling, starting from the text of this.
+
 These goals were achieved using PySpark and its libraries.
 
 ## Project structure
