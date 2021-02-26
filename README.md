@@ -5,7 +5,7 @@ The data obtained from the hydration process was then used to train a machine le
 Finally, we tested the project on various number of instances to show the perfomance improvement brought by a greater number of computation nodes.
 
 1. [Structure](#Structure)
-2. [How to run](#HowToRun)
+2. [How to run](#How To Run)
 
 ## Structure
 * proj: contains the application script. It is composed of x main modules:
