@@ -355,3 +355,6 @@ bigdata-terraform-aws-instance/localkey
 bigdata-terraform-aws-instance/chiave_aws.pem
 bigdata-terraform-aws-instance/.terraform/providers/registry.terraform.io/hashicorp/aws/3.29.1/darwin_amd64/terraform-provider-aws_v3.29.1_x5
 bigdata-terraform-aws-instance/.terraform.lock.hcl
+
+#data
+tweet_data/
