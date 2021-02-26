@@ -71,7 +71,7 @@ def get_hydrated_tweets_dataset(n):
             ind = '0' + str(i)
         else:
             ind = str(i)
-        source_path = r'C:\Users\Davide\id_tweets\hydrated_tweets_csv\hydrated_tweets_' + ind + '.csv'
+        source_path = r'.\tweet_data\hydrated_tweets_' + ind + '.csv'
         df_small = sqlContext.read.format('com.databricks.spark.csv') \
             .options(header='true', inferschema='false', quote='"', delimiter='\t', multiLine='true', schema=schema) \
             .load(source_path)
@@ -98,7 +98,7 @@ def get_tweets_sentiment_df(n):
             ind = '0' + str(i)
         else:
             ind = str(i)
-        path = r'C:\Users\Davide\id_tweets\csv_tweets\corona_tweets_' + ind + '.csv'
+        path = r'.\tweet_data\corona_tweets_' + ind + '.csv'
         df_small = sqlContext.read.format('com.databricks.spark.csv') \
             .options(header='false', inferschema='false', quote='"', delimiter=',').schema(schema_2) \
             .load(path)
@@ -129,7 +129,7 @@ def get_tweet_count_df():
             ind = '0' + str(i)
         else:
             ind = str(i)
-        path = r'C:\Users\Davide\id_tweets\id_tweets_' + ind + '.txt'
+        path = r'.\tweet_data\id_tweets_' + ind + '.txt'
         df = spark.read.text(path).withColumnRenamed('value', 'tweet_id')
         df = df.withColumn('tweet_id', col('tweet_id').cast(LongType()))
         df = df.withColumn(
