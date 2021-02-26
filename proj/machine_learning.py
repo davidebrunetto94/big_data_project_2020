@@ -56,7 +56,7 @@ trainingData.show(5)
 # This part shows two different ML models, the first one is a logistic regression model, the second one is a Naive Bayes
 # model. We chose the second model because it gave the best results.
 
-# logistic regression model
+# # logistic regression model
 # lr = LogisticRegression(maxIter=20, regParam=0.3, elasticNetParam=0)
 # lrModel = lr.fit(trainingData)
 # predictions = lrModel.transform(testData)
@@ -66,36 +66,23 @@ trainingData.show(5)
 # lrModel = lr.fit(trainingData)
 # predictions = lrModel.transform(testData)
 
-# Naive Bayes model
+# # Naive Bayes model
 # nb = NaiveBayes(smoothing=2)
 # model = nb.fit(trainingData)
-# predictions = model.transform(testData).rdd.map(lambda x: (float(x[3]), x[10]))
+# predictions = model.transform(testData)#.rdd.map(lambda x: (float(x[3]), x[10]))
 
-# model = SVMWithSGD.train(trainingData, iterations=100)
-# predictions = model.predict(testData)
 
 # This part shows the third classifier, a linear SVC of type one vs rest.
 # Definition of the binary classifier
-lsvc = LinearSVC(maxIter=1, regParam=0.1).setTol(5)
+lsvc = LinearSVC(maxIter=10, regParam=0.1).setTol(0.1)
 # Definition of the OVR classifier
 ovr = OneVsRest(classifier=lsvc)
 # train the multiclass model.
 ovrModel = ovr.fit(trainingData)
-# score the model on test data.
-# predictions = ovrModel.transform(testData).rdd.map(
-#     lambda x: (float(x[3]), x[9]))
-
+# make the predictions on the test data
 predictions = ovrModel.transform(testData)
 
-# This part evaluates the performance of the model. We used precision, recall and F1-Measure as metrics.
-# metrics = MulticlassMetrics(predictions)
-# precision = metrics.weightedPrecision
-# recall = metrics.weightedRecall
-# f1Score = metrics.weightedFMeasure()
-# print("Precision = %s" % precision)
-# print("Recall = %s" % recall)
-# print("F1 Score = %s" % f1Score)
-
+# #This part evaluates the performance of the model. We used precision, recall and F1-Measure as metrics.
 # obtain evaluator.
 evaluator_acc = MulticlassClassificationEvaluator(metricName="accuracy")
 evaluator_prec = MulticlassClassificationEvaluator(
@@ -104,7 +91,6 @@ evaluator_recall = MulticlassClassificationEvaluator(
     metricName="weightedRecall")
 evaluator_f1Score = MulticlassClassificationEvaluator(metricName="f1")
 
-# compute the classification error on test data.
 accuracy = evaluator_acc.evaluate(predictions)
 precision = evaluator_prec.evaluate(predictions)
 recall = evaluator_recall.evaluate(predictions)
