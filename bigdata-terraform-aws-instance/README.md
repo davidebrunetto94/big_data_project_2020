@@ -94,8 +94,11 @@ Generiamo una chiave SSH con questo comando:
 Generiamo una coppia di chiavi dall’interfaccia di AWS:
 Andare nel servizio EC2.
 Sul menù a sinistra cercare la voce “Rete e sicurezza” in cui sarà possibile cliccare su “Coppie di chiavi”.
+
 Cliccare sul bottone in alto a destra  “crea una coppia di chiavi”, inserire il nome “chiave_aws”, scegliere il formato .pem e proseguire alla creazione del file.
+
 Salvare il file nella cartella di terraform.
+
 Digitare il seguente comando per impostare i giusti permessi al file appena scaricato:
 ```chmod 400 chiaveaws.pem```
 
