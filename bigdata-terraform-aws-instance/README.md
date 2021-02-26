@@ -1,46 +1,47 @@
 # AWS - Terraform support
 
-Premessa: questa guida è stata testata su un account AWS free-tier. 
+Introduction: this guide is based on the script we created and tested on an AWSfree-tier account.
+With some minor modifications, the script can also be used on an AWS educate account.
 
 
-1. [Contenuto del pacchetto](#Contenuto-del-pacchetto)
-2. [Installazione AWS CLI](#Installazione-AWS-CLI)
-3. [Installazione Terraform](#Installazione-Terraform)
-4. [Preparazione Script](#Preparazione-Script)
-5. [Esecuzione Script](#Esecuzione-Script)
-6. [Eliminare l'ambiente](#Eliminare-l'ambiente)
+1. [Package contents](#Package-contents)
+2. [AWS CLI Installation](#AWS-CLI-Installation)
+3. [Terraform Installation](#Terraform-Installation)
+4. [Script Preparation](#Script-Preparation)
+5. [Script Executing](#Script-Executing)
+6. [Environment destruction](#Environment-destruction)
 
 
-## Contenuto del pacchetto
-* main.tf: script terraform che crea l'ambiente su AWS
-* variables.tf: contiene i parametri di configurazione per lo script
-* install.sh: script che installa e configura i nodi con il software necessario
+## Package contents
+* main.tf: terraform script that creates the environment on your AWS account
+* variables.tf: contains the configuration parameters for the script
+* install.sh: script that installs and configures your nodes with necessary software
 
 
-## Installazione AWS CLI
-L’installazione di AWS CLI è un requisito indispensabile per l’utilizzo di Terraform con AWS.
-Scaricare ed installare AWS CLI v2 per il proprio computer (https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
+## AWS CLI Installation
+Installing the AWS CLI is a prerequisite for using Terraform with AWS.
+Download and install AWS CLI v2 for your computer (https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
 
-Prima di proseguire è necessario possedere le seguenti informazioni relative al proprio account AWS: AWS Access Key ID e Secret Access Key.
-Queste informazioni sono recuperabili da qui:
+Before continuing, you need to have the following information about your AWS account: AWS Access Key ID and Secret Access Key.
+This information can be retrieved from here:
 https://console.aws.amazon.com/iam/home?#/security_credentials.
 
 
-Dalla shell digitare:
+From the shell type::
 ```
 $ aws configure
 ```
-verranno richiesti:
+You will be asked:
 * AWS Access Key ID
 * Secret Access Key
-* Default region name (ad es: “us-east-2”)
-* Default output format (ignorare e premere INVIO)
+* Default region name (for example: “us-east-2”)
+* Default output format (ignore and press ENTER)
 
 
-## Installazione Terraform
-L’installazione di terraform è stata eseguita su un computer Macintosh attraverso il terminale e Homebrew.
-Seguendo la guida ufficiale è possibile trovare la procedura per il sistema operativo in uso (https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started).
-Per MacOs è stato prerequisito fondamentale installare i seguenti software:
+## Terraform Installation
+In our case, Terraform was installed on a Macintosh computer through the terminal and Homebrew.
+Following the official guide you can find the procedure for you operating system (https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started).
+For MacOs it was a fundamental prerequisite to install the following software:
 
 
 * Homebrew:
@@ -58,7 +59,7 @@ $ xcode-select --install
 $ brew install --build-from-source gcc
 ```
 
-Dopodiché è possibile seguire la guida ed eseguire quindi i seguenti comandi:
+After that, following the guide, you need to execute the following commands:
 ```
 $ brew tap hashicorp/tap
 
@@ -67,69 +68,70 @@ $ brew install hashicorp/tap/terraform
 $ brew upgrade hashicorp/tap/terraform
 ```
 
-Verificare l’installazione con:
+Check the installation with:
 ```
 terraform -help
 ```
 
 
-## Preparazione Script
-Posizionarsi nella cartella “bigdata-terraform-aws-instance” .
+## Script Preparation
+Through the shell, navigate to the folder “bigdata-terraform-aws-instance” .
 
-Modificare il file ```variables.tf``` per cambiare i parametri secondo le proprie esigenze, in particolare:
-* ```region:``` la regione in cui istanziare le macchine,
-* ```instance_type:``` il tipo di macchine da istanziare (t2.micro è il tipo offerto dall’account aws free tier),
-* ```ami_image:``` specifica l’immagine del SO desiderato,
-* ```numOfSlaves:``` il numero di nodi slave,
-* ```subnetId:``` specifica l’id della sottorete da utilizzare per gli indirizzi privati dei nodi.
-Per trovare questa informazione, accedere al servizio AWS VPC, sul menù a sinistra aprire VIRTUAL PRIVATE CLOUD e selezionare “Subnets”: appariranno tutte le sottoreti. Se non ce ne sono, crearne una.
-Annotare il subnet id da utilizzare nella variabile dello script terraform.
-Nel campo IPv4 CIDR troviamo l’indirizzo della sottorete: gli indirizzi dei nostri nodi devono essere compresi all’interno di questa sottorete.
-* ```mgmt_jump_private_ips:``` l’elenco degli indirizzi ip privati appartenenti alla propria sottorete aws.
-Attenzione: se vengono modificato questi indirizzi ip è necessario che siano modificati anche sul file install.sh dalla riga 20 alla riga 25.
+Edit the file ```variables.tf``` in order to change the parameters according to your needs, in particular:
+* ```region:``` the region in which to instantiate the machines,
+* ```instance_type:``` the type of machines to instantiate (t2.micro is the type offered by the aws free tier account),
+* ```ami_image:``` specifies the desired OS image,
+* ```numOfSlaves:``` the number of slave nodes,
+* ```subnetId:``` specifies the subnet id to be used for the private addresses of the nodes.
+To find this information, you can access to the AWS VPC service, on the left menu open VIRTUAL PRIVATE CLOUD and select “Subnets”: all subnets will appear.
+If there aren't any, create one.
+Note the subnet id to be used in the terraform script variable.
+In the IPv4 CIDR field we find the address of the subnet: the addresses of our nodes must be included within this subnet.
+* ```mgmt_jump_private_ips:``` is the list of private ip addresses belonging to your aws subnet.
+Warning: if these ip addresses are modified, they must also be modified on the install.sh file from line 20 to line 25.
 
-Generiamo una chiave SSH con questo comando:
+We generate an SSH key with this command:
 ```ssh-keygen -f <terraform_directory>/localkey```
 
-Generiamo una coppia di chiavi dall’interfaccia di AWS:
-Andare nel servizio EC2.
-Sul menù a sinistra cercare la voce “Rete e sicurezza” in cui sarà possibile cliccare su “Coppie di chiavi”.
+We generate a key pair from the AWS interface:
+Go to the EC2 service.
+On the left menu, look for the item "Network and security" where you can click on "Key pairs".
 
-Cliccare sul bottone in alto a destra  “crea una coppia di chiavi”, inserire il nome “chiave_aws”, scegliere il formato .pem e proseguire alla creazione del file.
+Click on the button at the top right "create a key pair", enter the name "chiave_aws", choose the .pem format and continue to create the file.
 
-Salvare il file nella cartella di terraform.
+Save the file in the terraform folder.
 
-Digitare il seguente comando per impostare i giusti permessi al file appena scaricato:
+Type the following command to set the right permissions on the file you just downloaded:
 ```chmod 400 chiaveaws.pem```
 
 
-E’ ora possibile procedere con l’esecuzione dello script.
+Now you can proceed with the execution of the script.
 
 
-## Esecuzione Script
-Digitare il seguente comando per inizializzare la directory:
+## Script Executing
+Type the following command to initialize the directory:
 ```terraform init```
 
-Dopodichè è possibile lanciare il comando per creare ed avviare le istanze su AWS:
+Then you can run the command to create and launch instances on AWS:
 ```terraform apply```
 
-Quando verrà richiesto digitare la risposta ```yes```.
+When prompted, type the answer ```yes```.
 
-Attendere il completamento delle azioni.
+Wait for the actions to complete.
 
-Verranno create le istanze EC2 in cui verrà installato tutto il software necessario in automatico (java, spark-3.0.1, hadoop-2.7.7, Python 3.8) grazie allo script bash install.sh che verrà avviato sulle istanze.
-Le istanze saranno nominate come master_1 e poi slave_1, slave_2, ecc…
+The EC2 instances will be created in which all the necessary software will be installed automatically (java, spark-3.0.1, hadoop-2.7.7, Python 3.8) thanks to the bash install.sh script that will be started on the instances.
+Instances will be named as master_1 and then slave_1, slave_2, etc…
 
-Al termine verranno visualizzati col colore verde gli indirizzi DNS del master e degli slave.
+At the end, the DNS addresses of the master and the slaves will be displayed in green.
 
-Con questi indirizzi sarà possibile accedere alle istanze tramite il comando:
+With these addresses it will be possible to access the instances through the command:
 ```ssh -i <terraform_directory>/chiave_aws.pem ubuntu@<DNS_pubblico>```
 
 
-## Eliminare l'ambiente
-Qualora volessimo annullare l’esecuzione del comando ```apply``` eseguiamo:
+## Environment destruction
+If we want to cancel the execution of the command ```apply``` you can execute:
 ```terraform destroy```
 
-Quando verrà richiesto digitare la risposta ```yes```.
+When prompted, type the answer ```yes```.
 
-Lo stesso comando possiamo utilizzarlo per eliminare le istanze dal momento in cui non ci serviranno più.
+We can use the same command to delete instances when we no longer need them.
