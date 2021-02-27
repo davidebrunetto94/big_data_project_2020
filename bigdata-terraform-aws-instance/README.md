@@ -102,7 +102,7 @@ Click on the button at the top right "create a key pair", enter the name "chiave
 Save the file in the terraform folder.
 
 Type the following command to set the right permissions on the file you just downloaded:
-```chmod 400 chiaveaws.pem```
+```chmod 400 chiave_aws.pem```
 
 
 Now you can proceed with the execution of the script.
@@ -125,7 +125,7 @@ Instances will be named as master_1 and then slave_1, slave_2, etc…
 At the end, the DNS addresses of the master and the slaves will be displayed in green.
 
 With these addresses it will be possible to access the instances through the command:
-```ssh -i <terraform_directory>/chiave_aws.pem ubuntu@<DNS_pubblico>```
+```ssh -i <terraform_directory>/chiave_aws.pem ubuntu@<Public_DNS>```
 
 
 ## Environment destruction
