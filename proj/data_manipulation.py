@@ -5,7 +5,7 @@ from pyspark.sql import SparkSession, SQLContext
 from pyspark.sql.functions import asc, col, regexp_replace
 from pyspark.sql.types import (DateType, FloatType, IntegerType, LongType,
                                StringType, StructField, StructType)
-
+import os
 findspark.init()
 findspark.find()
 
@@ -17,8 +17,9 @@ def get_avg_tweet_sentiment_df(n):
     tweets_sentiment_df = tweets_sentiment_df.withColumn(
         "tweet_id", col('tweet_id').cast(LongType()))
 
-    timestamp_from_id_udf = spark.udf.register(
-        "timestamp_from_id", timestamp_from_id)
+    if not check_udf_registered(spark):
+        timestamp_from_id_udf = spark.udf.register(
+            "timestamp_from_id", timestamp_from_id)
 
     tweets_sentiment_df = tweets_sentiment_df.withColumn(
         'timestamp', timestamp_from_id_udf(col('tweet_id')))
@@ -30,6 +31,14 @@ def get_avg_tweet_sentiment_df(n):
         'timestamp').avg('sentiment').sort(col('timestamp'))
     # avg_sentiment_df.show(30)
     return avg_sentiment_df
+
+
+def check_udf_registered(spark):
+    for fn in spark.catalog.listFunctions():
+        # print(fn.name)
+        if fn.name == 'timestamp_from_id':
+            return True
+    return False
 
 
 def timestamp_from_id(id):
@@ -71,10 +80,12 @@ def get_hydrated_tweets_dataset(n):
             ind = '0' + str(i)
         else:
             ind = str(i)
-        source_path = r'.\tweet_data\hydrated_tweets_' + ind + '.csv'
+        dirname = os.path.dirname(__file__)
+        path = r'tweet_data\hydrated_tweets_' + ind + '.csv'
+        filename = os.path.join(dirname, path)
         df_small = sqlContext.read.format('com.databricks.spark.csv') \
             .options(header='true', inferschema='false', quote='"', delimiter='\t', multiLine='true', schema=schema) \
-            .load(source_path)
+            .load(filename)
         # print(df_small.count())
         hydrated_tweets_df = hydrated_tweets_df.union(df_small)
 
@@ -98,10 +109,12 @@ def get_tweets_sentiment_df(n):
             ind = '0' + str(i)
         else:
             ind = str(i)
-        path = r'.\tweet_data\corona_tweets_' + ind + '.csv'
+        dirname = os.path.dirname(__file__)
+        path = r'tweet_data\corona_tweets_' + ind + '.csv'
+        filename = os.path.join(dirname, path)
         df_small = sqlContext.read.format('com.databricks.spark.csv') \
             .options(header='false', inferschema='false', quote='"', delimiter=',').schema(schema_2) \
-            .load(path)
+            .load(filename)
         tweets_sentiment_df = tweets_sentiment_df.union(df_small)
 
     # print("----------------------------- TWEETS SENTIMENT ---------------------------------")
@@ -111,10 +124,11 @@ def get_tweets_sentiment_df(n):
 
 def get_tweet_count_df():
     spark, _ = get_spark_sql_context()
-    dim_dataset = 86
+    dim_dataset = 40
 
-    timestamp_from_id_udf = spark.udf.register(
-        "timestamp_from_id", timestamp_from_id)
+    if not check_udf_registered(spark):
+        timestamp_from_id_udf = spark.udf.register(
+            "timestamp_from_id", timestamp_from_id)
 
     schema = StructType([
         StructField('tweet_id', LongType(), True),
@@ -129,8 +143,11 @@ def get_tweet_count_df():
             ind = '0' + str(i)
         else:
             ind = str(i)
-        path = r'.\tweet_data\id_tweets_' + ind + '.txt'
-        df = spark.read.text(path).withColumnRenamed('value', 'tweet_id')
+        import os
+        dirname = os.path.dirname(__file__)
+        path = r'tweet_data\id_tweets_' + ind + '.txt'
+        filename = os.path.join(dirname, path)
+        df = spark.read.text(filename).withColumnRenamed('value', 'tweet_id')
         df = df.withColumn('tweet_id', col('tweet_id').cast(LongType()))
         df = df.withColumn(
             'timestamp', timestamp_from_id_udf(col('tweet_id')))
@@ -169,7 +186,7 @@ def get_clean_ml_dataset():
         'label', discretize_sentiment_udf(col('sentiment')))
 
     data_df = regex_data_cleaning(data_df)
-    return stratified_sampling(10, data_df)
+    return stratified_sampling(1000000, data_df)
 
 # Function to 'clean' the dataset using regular expressions
 

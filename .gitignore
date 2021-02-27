@@ -357,4 +357,5 @@ bigdata-terraform-aws-instance/.terraform/providers/registry.terraform.io/hashic
 bigdata-terraform-aws-instance/.terraform.lock.hcl
 
 #data
-tweet_data/
+proj/tweet_data/
+proj/test.py
