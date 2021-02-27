@@ -13,6 +13,9 @@ sudo apt-get -y install python3
 sudo apt-get -y install python3-pip
 pip3 install findspark
 pip3 install numpy
+pip3 install --user -U nltk
+pip3 install -U matplotlib
+
 sudo apt-get -y install openjdk-8-jdk
 
 # master and slaves ip (you can add more if needed)
