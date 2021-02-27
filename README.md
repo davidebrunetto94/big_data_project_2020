@@ -15,7 +15,8 @@ Finally, we tested the project on various number of instances to show the perfom
     * **data_manipulation.py**, this module is composed of all the functions that take in input 'raw' tweets data, and manipulate it to make it better suited for the machine learning process. This includes functions that gather the data from the csv files and generates Pyspark dataframes using the Pyspark sql module, a function to discretize the sentiment of the tweets, a function that uses regular expressions to clean the text of the tweets, a function to create a stratified sampling of the data, and so on...;
     * **machine_learning.py**, this module handles all the machine learning related tasks. It takes in input the clean data and then, using logistic regression, creates a model to predict the sentiment of the tweets. This model achieves a precision of xx.y%;
     * **trend_graphs.py**, this module handles the trend graphs. The module takes in input a dataframe called "sentiment_df", which contains the average sentiment of the tweets grouped by day, and a second dataframe called "count_df" which contains the count of the tweets grouped by day. This second dataframe was created using the dehydrated tweets id, because of the fact that the volume of the hydrated tweets is smaller than the counts of tweet IDs since some tweets were deleted afterwards.
-* bigdata-terraform-aws-instance: contiene gli script necessari alla creazione dell'ambiente su AWS
+
+* bigdata-terraform-aws-instance: contains the scripts needed to create the environment on AWS
 
 ## How to run
 To run the machine learning module of the project, use this command:
