@@ -88,7 +88,7 @@ If there aren't any, create one.
 Note the subnet id to be used in the terraform script variable.
 In the IPv4 CIDR field we find the address of the subnet: the addresses of our nodes must be included within this subnet.
 * ```mgmt_jump_private_ips:``` is the list of private ip addresses belonging to your aws subnet.
-Warning: if these ip addresses are modified, they must also be modified on the install.sh file from line 20 to line 25.
+Warning: if these ip addresses are modified, they must also be modified on the install.sh file from line 23 to line 28.
 
 We generate an SSH key with this command:
 ```ssh-keygen -f <terraform_directory>/localkey```
