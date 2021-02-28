@@ -65,6 +65,18 @@ resource "aws_instance" "master1" {
         }
     }
 
+    provisioner "file" {
+        source      = "../proj/"
+        destination = "/home/ubuntu/"
+    
+        connection {
+            host     = self.public_dns
+            type     = "ssh"
+            user     = "ubuntu"
+            private_key = file(var.pathChiaveAws)
+        }
+    }
+
     provisioner "local-exec" {
         command = "cat ./${var.nomeChiaveLocale}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/authorized_keys'"
     }
