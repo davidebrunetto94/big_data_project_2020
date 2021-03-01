@@ -13,6 +13,7 @@ With some minor modifications, the script can also be used on an AWS educate acc
 
 
 ## Package contents
+It is important to download the entire GitHub project and maintain the directory structure. The terraform script will automatically load the application contained in the proj folder inside the master node in the ```/home/ubuntu``` directory.
 * main.tf: terraform script that creates the environment on your AWS account
 * variables.tf: contains the configuration parameters for the script
 * install.sh: script that installs and configures your nodes with necessary software
