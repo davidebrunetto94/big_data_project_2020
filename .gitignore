@@ -360,3 +360,5 @@ bigdata-terraform-aws-instance/.terraform.lock.hcl
 proj/tweet_data/
 proj/test.py
 .DS_Store
+*.csv
+*.txt

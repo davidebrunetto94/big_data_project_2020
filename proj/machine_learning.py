@@ -1,4 +1,5 @@
 import nltk
+import time
 from nltk.corpus import stopwords
 from pyspark.ml import Pipeline
 from pyspark.ml.classification import (LinearSVC, LogisticRegression,
@@ -12,8 +13,14 @@ from pyspark.mllib.util import MLUtils
 
 from data_manipulation import get_clean_ml_dataset
 
+# Start stopwatch for calculating the running time
+start_time = time.time()
+print("Start...")
+
 # We get the clean dataset for machine learning
 data_df = get_clean_ml_dataset()
+
+print("data_df loaded")
 
 # regular expression tokenizer
 regexTokenizer = RegexTokenizer(
@@ -99,3 +106,4 @@ print("Accuracy = %s" % accuracy)
 print("Precision = %s" % precision)
 print("Recall = %s" % recall)
 print("F1 Score = %s" % f1Score)
+print("--- Execution time: %s seconds ---" % (time.time() - start_time))

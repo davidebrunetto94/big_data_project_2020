@@ -124,7 +124,7 @@ def get_tweets_sentiment_df(n):
 
 def get_tweet_count_df():
     spark, _ = get_spark_sql_context()
-    dim_dataset = 40
+    dim_dataset = 4
 
     if not check_udf_registered(spark):
         timestamp_from_id_udf = spark.udf.register(
