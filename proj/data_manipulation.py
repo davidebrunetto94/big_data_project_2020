@@ -50,12 +50,18 @@ def timestamp_from_id(id):
 
 
 def get_spark_sql_context():
-    conf = pyspark.SparkConf().setAppName('appName').setMaster('local')
+    conf = SparkConf().setAll([("spark.worker.cleanup.enabled", True),
+                               ("spark.serializer",
+                                "org.apache.spark.serializer.KryoSerializer"),
+                               ("spark.kryo.registrationRequired", "false"),
+                               ("spark.master", "spark://s01:7077")])
+
+    # sc = SparkContext(conf=conf).getOrCreate()
     sc = pyspark.SparkContext.getOrCreate(conf=conf)
     spark = SparkSession \
         .builder \
-        .master('local') \
-        .appName('Notebook') \
+        .master('spark://s01:7077') \
+        .appName('Big Data Project') \
         .config('spark.sql.debug.maxToStringFields', 2000) \
         .config('spark.debug.maxToStringFields', 2000) \
         .getOrCreate()
