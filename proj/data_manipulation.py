@@ -87,7 +87,7 @@ def get_hydrated_tweets_dataset(n):
         else:
             ind = str(i)
         dirname = os.path.dirname(__file__)
-        path = r'tweet_data\hydrated_tweets_' + ind + '.csv'
+        path = r'tweet_data/hydrated_tweets_' + ind + '.csv'
         filename = os.path.join(dirname, path)
         df_small = sqlContext.read.format('com.databricks.spark.csv') \
             .options(header='true', inferschema='false', quote='"', delimiter='\t', multiLine='true', schema=schema) \
@@ -116,7 +116,7 @@ def get_tweets_sentiment_df(n):
         else:
             ind = str(i)
         dirname = os.path.dirname(__file__)
-        path = r'tweet_data\corona_tweets_' + ind + '.csv'
+        path = r'tweet_data/corona_tweets_' + ind + '.csv'
         filename = os.path.join(dirname, path)
         df_small = sqlContext.read.format('com.databricks.spark.csv') \
             .options(header='false', inferschema='false', quote='"', delimiter=',').schema(schema_2) \
@@ -130,7 +130,7 @@ def get_tweets_sentiment_df(n):
 
 def get_tweet_count_df():
     spark, _ = get_spark_sql_context()
-    dim_dataset = 4
+    dim_dataset = 1
 
     if not check_udf_registered(spark):
         timestamp_from_id_udf = spark.udf.register(
@@ -151,7 +151,7 @@ def get_tweet_count_df():
             ind = str(i)
         import os
         dirname = os.path.dirname(__file__)
-        path = r'tweet_data\id_tweets_' + ind + '.txt'
+        path = r'tweet_data/id_tweets_' + ind + '.txt'
         filename = os.path.join(dirname, path)
         df = spark.read.text(filename).withColumnRenamed('value', 'tweet_id')
         df = df.withColumn('tweet_id', col('tweet_id').cast(LongType()))
@@ -166,6 +166,7 @@ def get_tweet_count_df():
 
 
 def get_clean_ml_dataset():
+    print("..................... I'M IN GET_CLEAN_ML_DATASET FUNCTION .....................")
     spark, _ = get_spark_sql_context()
     n_datasets = 1  # the number of datasets we want to use
 
