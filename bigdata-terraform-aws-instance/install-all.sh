@@ -15,17 +15,16 @@ pip3 install findspark
 pip3 install numpy
 pip3 install --user -U nltk
 pip3 install -U matplotlib
-
 sudo apt-get -y install openjdk-8-jdk
 
 # master and slaves ip (you can add more if needed)
 echo '
-172.31.16.101 master_1
-172.31.16.102 slave_1
-172.31.16.103 slave_2
-172.31.16.104 slave_3
-172.31.16.105 slave_4
-172.31.16.106 slave_5' | sudo tee --append /etc/hosts > /dev/null
+172.31.16.101 s01
+172.31.16.102 s02
+172.31.16.103 s03
+172.31.16.104 s04
+172.31.16.105 s05
+172.31.16.106 s06' | sudo tee --append /etc/hosts > /dev/null
 
 sudo chmod 700 /home/ubuntu/.ssh
 sudo chmod 600 /home/ubuntu/.ssh/id_rsa
@@ -66,7 +65,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
   <property>
     <name>fs.defaultFS</name>
-    <value>hdfs://master_1:9000</value>
+    <value>hdfs://s01:9000</value>
   </property>
 </configuration>' | sudo tee /opt/hadoop-2.7.7/etc/hadoop/core-site.xml > /dev/null
 
@@ -97,7 +96,7 @@ echo '<?xml version="1.0"?>
   </property>
   <property>
     <name>yarn.resourcemanager.hostname</name>
-    <value>master_1</value>
+    <value>s01</value>
   </property>
 </configuration>' | sudo tee /opt/hadoop-2.7.7/etc/hadoop/yarn-site.xml > /dev/null
 
@@ -123,7 +122,7 @@ echo '<?xml version="1.0"?>
 <configuration>
   <property>
     <name>mapreduce.jobtracker.address</name>
-    <value>master_1:54311</value>
+    <value>s01:54311</value>
   </property>
   <property>
     <name>mapreduce.framework.name</name>
@@ -164,14 +163,14 @@ echo '<?xml version="1.0" encoding="UTF-8"?>
 </configuration>' | sudo tee /opt/hadoop-2.7.7/etc/hadoop/hdfs-site.xml > /dev/null
 
 echo '
-slave_1' | sudo tee --append /opt/hadoop-2.7.7/etc/hadoop/masters > /dev/null
+s01' | sudo tee --append /opt/hadoop-2.7.7/etc/hadoop/masters > /dev/null
 
 echo '
-slave_2
-slave_3
-slave_4
-slave_5
-slave_6' | sudo tee /opt/hadoop-2.7.7/etc/hadoop/slaves > /dev/null
+s02
+s03
+s04
+s05
+s06' | sudo tee /opt/hadoop-2.7.7/etc/hadoop/slaves > /dev/null
 
 sudo sed -i -e 's/export\ JAVA_HOME=\${JAVA_HOME}/export\ JAVA_HOME=\/usr\/lib\/jvm\/java-8-openjdk-amd64/g' /opt/hadoop-2.7.7/etc/hadoop/hadoop-env.sh
 
@@ -200,16 +199,16 @@ cp conf/spark-env.sh.template conf/spark-env.sh
 # spark configuration files
 echo '
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-export SPARK_MASTER_HOST=master_1
+export SPARK_MASTER_HOST=s01
 export HADOOP_CONF_DIR=/opt/hadoop-2.7.7/etc/hadoop
 export HADOOP_HOME=/opt/hadoop-2.7.7' | sudo tee --append conf/spark-env.sh > /dev/null
 
 echo '
-slave_2
-slave_3
-slave_4
-slave_5
-slave_6' | sudo tee --append conf/slaves > /dev/null
+s02
+s03
+s04
+s05
+s06' | sudo tee --append conf/slaves > /dev/null
 
 cp conf/spark-defaults.conf.template conf/spark-defaults.conf
 
@@ -218,4 +217,4 @@ echo -e '$HADOOP_HOME/sbin/start-dfs.sh && $HADOOP_HOME/sbin/start-yarn.sh && $H
 
 echo '$SPARK_HOME/sbin/start-master.sh' > /home/ubuntu/spark-start-master.sh
 
-echo '$SPARK_HOME/sbin/start-slave.sh spark://master_1:7077' > /home/ubuntu/spark-start-slave.sh
+echo '$SPARK_HOME/sbin/start-slave.sh spark://s01:7077' > /home/ubuntu/spark-start-slave.sh

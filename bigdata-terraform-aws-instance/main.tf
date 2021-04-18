@@ -1,168 +1,160 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 3.28"
-    }
-  }
+locals {
+    #  Directories start with "C:..." on Windows; All other OSs use "/" for root.
+    is_windows = substr(pathexpand("~"), 0, 1) == "/" ? false : true
 }
+
 
 provider "aws" {
-    region  = var.region
-    profile = var.profile
+    region      = var.region
+    access_key  = var.access_key
+    secret_key  = var.secret_key
+    token       = var.token
 }
 
-resource "aws_security_group" "webnode" {
-    name = "webnode"
-    description = "Web Security Group"
-        ingress {
-        from_port = 22
-        to_port = 22
-        protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
+resource "aws_security_group" "Hadoop_cluster_sc" {
+    name = "Hadoop_cluster_sc"
+
+    # inbound internet access
     ingress {
         from_port = 0
         to_port = 0
         protocol = "-1"
         cidr_blocks = ["0.0.0.0/0"]
     }
+
+    # outbound internet access
     egress {
         from_port   = 0
         to_port     = 0
         protocol    = "-1"
         cidr_blocks = ["0.0.0.0/0"]
     }
+
     lifecycle {
         create_before_destroy = true
     }
 }
 
 
-resource "aws_instance" "master1" {
-    ami             = var.ami_image
-    instance_type   = var.instance_type
-    key_name        = var.nomeChiaveAws
+# namenode (master)
+resource "aws_instance" "Namenode" {
+    subnet_id = "subnet-8c773bc1"
+    count = var.namenode_count
+    ami = var.ami_image
+    instance_type = var.instance_type
+    key_name = var.aws_key_name
     tags = {
-        Name = "master_1"
+        Name = "s01"
     }
-    
-    subnet_id = var.subnetId
-
-    vpc_security_group_ids = [aws_security_group.webnode.id]
-
-    private_ip      = var.mgmt_jump_private_ips_master
+    private_ip = "172.31.16.101"
+    vpc_security_group_ids = [aws_security_group.Hadoop_cluster_sc.id]
 
     provisioner "file" {
-        source      = "install.sh"
-        destination = "/tmp/install.sh"
+        source      = "install-all.sh"
+        destination = "/tmp/install-all.sh"
 
         connection {
             host     = self.public_dns
             type     = "ssh"
             user     = "ubuntu"
-            private_key = file(var.pathChiaveAws)
+            private_key = file(var.amz_key_path)
         }
     }
 
     provisioner "file" {
-        source      = "../proj/"
+        source      = "app/"
         destination = "/home/ubuntu/"
-    
+
         connection {
             host     = self.public_dns
             type     = "ssh"
             user     = "ubuntu"
-            private_key = file(var.pathChiaveAws)
+            private_key = file(var.amz_key_path)
         }
     }
 
     provisioner "local-exec" {
-        command = "cat ./${var.nomeChiaveLocale}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/authorized_keys'"
+        interpreter = local.is_windows ? ["PowerShell"] : []
+        command = "cat ${var.key_path}/${var.key_name}.pub | ssh -o StrictHostKeyChecking=no -i ${var.amz_key_path}  ubuntu@${self.public_dns} 'cat >> .ssh/authorized_keys'"
     }
     provisioner "local-exec" {
-        command = "cat ./${var.nomeChiaveLocale}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa.pub'"
+        interpreter = local.is_windows ? ["PowerShell"] : []
+        command = "cat ${var.key_path}/${var.key_name}.pub | ssh -o StrictHostKeyChecking=no -i ${var.amz_key_path}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa.pub'"
     }
     provisioner "local-exec" {
-        command = "cat ./${var.nomeChiaveLocale} | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa'"
+        interpreter = local.is_windows ? ["PowerShell"] : []
+        command = "cat ${var.key_path}/${var.key_name} | ssh -o StrictHostKeyChecking=no -i ${var.amz_key_path}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa'"
     }
 
     # execute the configuration script
     provisioner "remote-exec" {
         inline = [
-            "chmod +x /tmp/install.sh",
-            "/bin/bash /tmp/install.sh",
+            "chmod +x /tmp/install-all.sh",
+            "/bin/bash /tmp/install-all.sh",
             "/opt/hadoop-2.7.7/bin/hadoop namenode -format"
         ]
         connection {
             host     = self.public_dns
             type     = "ssh"
             user     = "ubuntu"
-            private_key = file(var.pathChiaveAws)
+            private_key = file(var.amz_key_path)
         }
 
     }
 }
 
 
-resource "aws_instance" "slave1" {
-    count           = var.numOfSlaves
-    ami             = var.ami_image
-    instance_type   = var.instance_type
-    key_name        = var.nomeChiaveAws
+# datanode (slaves)
+resource "aws_instance" "Datanode" {
+    subnet_id = "subnet-8c773bc1"
+    count = var.datanode_count
+    ami = var.ami_image
+    instance_type = var.instance_type
+    key_name = var.aws_key_name
     tags = {
-        Name = lookup(var.mgmt_jump_hostnames, count.index)
+        Name = lookup(var.hostnames, count.index)
     }
+    private_ip = lookup(var.ips, count.index)
+    vpc_security_group_ids = [aws_security_group.Hadoop_cluster_sc.id]
 
-    subnet_id = var.subnetId
-    
-    vpc_security_group_ids = [aws_security_group.webnode.id]
-
-    private_ip = lookup(var.mgmt_jump_private_ips, count.index)
-
+    # copy the initialization script to the remote machines
     provisioner "file" {
-        source      = "install.sh"
-        destination = "/tmp/install.sh"
+        source      = "install-all.sh"
+        destination = "/tmp/install-all.sh"
 
         connection {
             host     = self.public_dns
             type     = "ssh"
             user     = "ubuntu"
-            private_key = file(var.pathChiaveAws)
+            private_key = file(var.amz_key_path)
         }
     }
 
     provisioner "local-exec" {
-        command = "cat ./${var.nomeChiaveLocale}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/authorized_keys'"
+        interpreter = local.is_windows ? ["PowerShell"] : []
+        command = "cat ${var.key_path}/${var.key_name}.pub | ssh -o StrictHostKeyChecking=no -i ${var.amz_key_path}  ubuntu@${self.public_dns} 'cat >> .ssh/authorized_keys'"
     }
     provisioner "local-exec" {
-        command = "cat ./${var.nomeChiaveLocale}.pub | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa.pub'"
+        interpreter = local.is_windows ? ["PowerShell"] : []
+        command = "cat ${var.key_path}/${var.key_name}.pub | ssh -o StrictHostKeyChecking=no -i ${var.amz_key_path}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa.pub'"
     }
     provisioner "local-exec" {
-        command = "cat ./${var.nomeChiaveLocale} | ssh -o StrictHostKeyChecking=no -i ${var.pathChiaveAws}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa'"
+        interpreter = local.is_windows ? ["PowerShell"] : []
+        command = "cat ${var.key_path}/${var.key_name} | ssh -o StrictHostKeyChecking=no -i ${var.amz_key_path}  ubuntu@${self.public_dns} 'cat >> .ssh/id_rsa'"
     }
 
+    # execute the configuration script
     provisioner "remote-exec" {
         inline = [
-            "chmod +x /tmp/install.sh",
-            "/bin/bash /tmp/install.sh",
+            "chmod +x /tmp/install-all.sh",
+            "/bin/bash /tmp/install-all.sh",
         ]
         connection {
             host     = self.public_dns
             type     = "ssh"
             user     = "ubuntu"
-            private_key = file(var.pathChiaveAws)
+            private_key = file(var.amz_key_path)
         }
 
     }
-}
-
-
-
-output "Master_dns_address" {
-    value = aws_instance.master1.*.public_dns
-}
-
-output "Slave_dns_address" {
-    value = aws_instance.slave1.*.public_dns
 }

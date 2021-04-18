@@ -1,28 +1,27 @@
-import findspark
-import pyspark
-from pyspark import SparkConf, SparkContext
-from pyspark.sql import SparkSession, SQLContext
-from pyspark.sql.functions import asc, col, regexp_replace
+import os
+
+from pyspark.sql.functions import asc, broadcast, col, regexp_replace, udf
 from pyspark.sql.types import (DateType, FloatType, IntegerType, LongType,
                                StringType, StructField, StructType)
-import os
-findspark.init()
-findspark.find()
+
+# from get_spark_context import get_spark_sql_context
 
 
-def get_avg_tweet_sentiment_df(n):
+def get_avg_tweet_sentiment_df(n_datasets, n_partitions, spark, sqlContext, repartition):
     import time
-    spark, _ = get_spark_sql_context()
-    tweets_sentiment_df = get_tweets_sentiment_df(n)
+
+    # spark, _ = get_spark_sql_context()
+    tweets_sentiment_df = get_tweets_sentiment_df(
+        n_datasets, n_partitions, spark, sqlContext, repartition)
     tweets_sentiment_df = tweets_sentiment_df.withColumn(
         "tweet_id", col('tweet_id').cast(LongType()))
 
-    if not check_udf_registered(spark):
-        timestamp_from_id_udf = spark.udf.register(
-            "timestamp_from_id", timestamp_from_id)
+    # if not check_udf_registered(spark):
+    #     spark.udf.register(
+    #         "timestamp_from_id_udf", timestamp_from_id)
 
     tweets_sentiment_df = tweets_sentiment_df.withColumn(
-        'timestamp', timestamp_from_id_udf(col('tweet_id')))
+        'timestamp', timestamp_from_id(col('tweet_id')))
 
     tweets_sentiment_df = tweets_sentiment_df.withColumn(
         'timestamp', col('timestamp').cast(DateType()))
@@ -33,14 +32,15 @@ def get_avg_tweet_sentiment_df(n):
     return avg_sentiment_df
 
 
-def check_udf_registered(spark):
-    for fn in spark.catalog.listFunctions():
-        # print(fn.name)
-        if fn.name == 'timestamp_from_id':
-            return True
-    return False
+# def check_udf_registered(spark):
+#     for fn in spark.catalog.listFunctions():
+#         # print(fn.name)
+#         if fn.name == 'timestamp_from_id_udf':
+#             return True
+#     return False
 
 
+@udf
 def timestamp_from_id(id):
     import datetime as dt
     shifted_id = id >> 22  # applying right shift operator to the tweet ID
@@ -49,28 +49,8 @@ def timestamp_from_id(id):
     return file_time.strftime('%Y-%m-%d')
 
 
-def get_spark_sql_context():
-    conf = SparkConf().setAll([("spark.worker.cleanup.enabled", True),
-                               ("spark.serializer",
-                                "org.apache.spark.serializer.KryoSerializer"),
-                               ("spark.kryo.registrationRequired", "false"),
-                               ("spark.master", "spark://s01:7077")])
-
-    # sc = SparkContext(conf=conf).getOrCreate()
-    sc = pyspark.SparkContext.getOrCreate(conf=conf)
-    spark = SparkSession \
-        .builder \
-        .master('spark://s01:7077') \
-        .appName('Big Data Project') \
-        .config('spark.sql.debug.maxToStringFields', 2000) \
-        .config('spark.debug.maxToStringFields', 2000) \
-        .getOrCreate()
-    sqlContext = SQLContext(sc)
-    return [spark, sqlContext]
-
-
-def get_hydrated_tweets_dataset(n):
-    spark, sqlContext = get_spark_sql_context()
+def get_hydrated_tweets_dataset(n, n_partitions, spark, sqlContext, repartition):
+    # spark, sqlContext = get_spark_sql_context()
     schema = StructType([
         StructField('full_text', StringType(), True),
         StructField('id_str', StringType(), True),
@@ -92,16 +72,20 @@ def get_hydrated_tweets_dataset(n):
         df_small = sqlContext.read.format('com.databricks.spark.csv') \
             .options(header='true', inferschema='false', quote='"', delimiter='\t', multiLine='true', schema=schema) \
             .load(filename)
-        # print(df_small.count())
         hydrated_tweets_df = hydrated_tweets_df.union(df_small)
 
+    if repartition == True:
+        hydrated_tweets_df = hydrated_tweets_df.repartition(n_partitions, "id_str")
+    print('----------------HYDRATED_TWEETS---------------------------')
+    print(hydrated_tweets_df.rdd.getNumPartitions())
+    print('-------------------------------------------')
     # print("-----------------------------HYDRATED TWEETS ---------------------------------")
     # hydrated_tweets_df.show(20)
     return hydrated_tweets_df
 
 
-def get_tweets_sentiment_df(n):
-    spark, sqlContext = get_spark_sql_context()
+def get_tweets_sentiment_df(n, n_partitions, spark, sqlContext, repartition):
+
     schema_2 = StructType([
         StructField('tweet_id', StringType(), True),
         StructField('sentiment', FloatType(), True)
@@ -110,6 +94,7 @@ def get_tweets_sentiment_df(n):
     tweets_sentiment_df = spark.createDataFrame(
         spark.sparkContext.emptyRDD(), schema_2)
 
+    # tweets_sentiment_df.persist()
     for i in range(1, n+1):
         if i < 10:
             ind = '0' + str(i)
@@ -123,18 +108,18 @@ def get_tweets_sentiment_df(n):
             .load(filename)
         tweets_sentiment_df = tweets_sentiment_df.union(df_small)
 
+    if repartition == True:
+        tweets_sentiment_df = tweets_sentiment_df.repartition(n_partitions, 'tweet_id')
+
+    print('--------------tweet sentiment DF------------------------')
+    print(tweets_sentiment_df.rdd.getNumPartitions())
+    print('-------------------------------------------')
     # print("----------------------------- TWEETS SENTIMENT ---------------------------------")
     # tweets_sentiment_df.show(5)
     return tweets_sentiment_df
 
 
-def get_tweet_count_df():
-    spark, _ = get_spark_sql_context()
-    dim_dataset = 1
-
-    if not check_udf_registered(spark):
-        timestamp_from_id_udf = spark.udf.register(
-            "timestamp_from_id", timestamp_from_id)
+def get_tweet_count_df(dim_dataset, spark, sqlContext):
 
     schema = StructType([
         StructField('tweet_id', LongType(), True),
@@ -156,7 +141,7 @@ def get_tweet_count_df():
         df = spark.read.text(filename).withColumnRenamed('value', 'tweet_id')
         df = df.withColumn('tweet_id', col('tweet_id').cast(LongType()))
         df = df.withColumn(
-            'timestamp', timestamp_from_id_udf(col('tweet_id')))
+            'timestamp', timestamp_from_id(col('tweet_id')))
         df = df.withColumn('timestamp', col('timestamp').cast(DateType()))
         tweets_df = tweets_df.union(df)
 
@@ -165,17 +150,22 @@ def get_tweet_count_df():
     return tweets_df
 
 
-def get_clean_ml_dataset():
+def get_clean_ml_dataset(n_datasets, n_partitions, spark, sqlContext):
     print("..................... I'M IN GET_CLEAN_ML_DATASET FUNCTION .....................")
-    spark, _ = get_spark_sql_context()
-    n_datasets = 1  # the number of datasets we want to use
 
-    hydrated_tweets_df = get_hydrated_tweets_dataset(n_datasets)
-    tweets_sentiment_df = get_tweets_sentiment_df(n_datasets)
+    hydrated_tweets_df = get_hydrated_tweets_dataset(
+        n_datasets, n_partitions, spark, sqlContext, True)
+    tweets_sentiment_df = get_tweets_sentiment_df(
+        n_datasets, n_partitions, spark, sqlContext, True)
+
+    hydrated_tweets_df.persist()
+    tweets_sentiment_df.persist()
+
     joined_df = hydrated_tweets_df.join(
         tweets_sentiment_df, hydrated_tweets_df['id_str'] == tweets_sentiment_df['tweet_id'], 'inner')
-    # print("----------------------------- JOINED DF ---------------------------------")
-    # joined_df.show(5)
+
+    hydrated_tweets_df.unpersist()
+    tweets_sentiment_df.unpersist()
 
     # We drop the columns we don't need in our joined dataset
     drop_columns = ['id_str', 'tweet_id', 'created_at']
@@ -184,6 +174,7 @@ def get_clean_ml_dataset():
     # print("----------------------------- DATA DF ---------------------------------")
     # data_df.show(5)
 
+    data_df.persist()
     # registering the UDF
     discretize_sentiment_udf = spark.udf.register(
         "discretize_sentiment", discretize_sentiment, IntegerType())
@@ -193,7 +184,8 @@ def get_clean_ml_dataset():
         'label', discretize_sentiment_udf(col('sentiment')))
 
     data_df = regex_data_cleaning(data_df)
-    return stratified_sampling(1000000, data_df)
+    # return stratified_sampling(20000, data_df)
+    return data_df.sampleBy('label', {0: 0.1, 1: 0.2, 2: 0.3, 3: 0.3})
 
 # Function to 'clean' the dataset using regular expressions
 
@@ -236,6 +228,8 @@ def stratified_sampling(dim_sample, dataset):
 
     class_count_asc = dataset.groupBy(
         "label").count().sort(asc('count'))
+
+    dataset.unpersist()
 
     n_least_pop_class = class_count_asc.first()['count']
 

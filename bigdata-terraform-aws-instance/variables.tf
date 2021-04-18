@@ -1,62 +1,64 @@
 variable "region" {
     type = string
-    default = "us-east-2" # Stati Uniti Orientali (Ohio)
+    default = "us-east-1"
+}
+
+variable "access_key" {
+    type = string
+    default = ""
+}
+
+variable "secret_key" {
+    type = string
+    default = ""
+}
+
+variable "token" {
+    type = string
+    default = null
 }
 
 variable "instance_type" {
     type = string
-    default = "t2.micro" # free tier
+    default = "t2.xlarge"               # change instance type if needed
 }
 
 variable "ami_image" {
     type = string
-    default = "ami-0996d3051b72b5b2c" # ubuntu 20.04
-}
-
-variable "profile"{
-    type = string
-    default = "default"
+    default = "ami-042e8287309f5df03"   # ubuntu image
 }
 
 variable "key_name" {
     type = string
-    default = "localkey"
+    default = "localkey"                # key name, see readme
 }
 
-variable "nomeChiaveAws" {
+variable "key_path" {
     type = string
-    default = "chiave_aws"
+    default = "."                       # change directory to local .ssh directory e.g. ~/.ssh/
 }
 
-variable "nomeChiaveLocale" {
+variable "aws_key_name" {
     type = string
-    default = "localkey"
+    default = "amzkey"                  # key name, see readme
 }
 
-variable "pathChiaveAws" {
+variable "amz_key_path" {
     type = string
-    default = "chiave_aws.pem"
+    default = "amzkey.pem"
 }
 
-variable "numOfMasters" {
+variable "namenode_count" {
     type = number
-    default = 1
+    default = 1                         # count = 1 = 1 aws EC2
 }
 
-variable "numOfSlaves" {
+variable "datanode_count" {
     type = number
-    default = 1
+    default = 5                         # count = 3 = 3 aws EC2
 }
 
-variable "mgmt_jump_private_ips_master" {
-    default = "172.31.16.101"
-}
-
-variable "subnetId" {
-    default = "subnet-915144eb"
-}
-
-variable "mgmt_jump_private_ips" {
+variable "ips" {
     default = {
         "0" = "172.31.16.102"
         "1" = "172.31.16.103"
@@ -64,16 +66,20 @@ variable "mgmt_jump_private_ips" {
         "3" = "172.31.16.105"
         "4" = "172.31.16.106"
         "5" = "172.31.16.107"
+        "6" = "172.31.16.108"
+        "7" = "172.31.16.109"
     }
 }
 
-variable "mgmt_jump_hostnames" {
+variable "hostnames" {
     default = {
-        "0" = "slave_1"
-        "1" = "slave_2"
-        "2" = "slave_3"
-        "3" = "slave_4"
-        "4" = "slave_5"
-        "5" = "slave_6"
+        "0" = "s02"
+        "1" = "s03"
+        "2" = "s04"
+        "3" = "s05"
+        "4" = "s06"
+        "5" = "s07"
+        "6" = "s08"
+        "7" = "s09"
     }
 }
