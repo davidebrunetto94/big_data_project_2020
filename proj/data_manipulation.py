@@ -184,7 +184,6 @@ def get_clean_ml_dataset(n_datasets, n_partitions, spark, sqlContext):
         'label', discretize_sentiment_udf(col('sentiment')))
 
     data_df = regex_data_cleaning(data_df)
-    # return stratified_sampling(20000, data_df)
     return data_df.sampleBy('label', {0: 0.1, 1: 0.2, 2: 0.3, 3: 0.3})
 
 # Function to 'clean' the dataset using regular expressions
@@ -218,29 +217,3 @@ def discretize_sentiment(sentiment) -> int:
     if(sentiment > 0.5):
         return 3
 
-# This function returns a stratified sampling of a dataset with the size of around dim_sample. If there are not enough elements from the least
-# popular class to make the sample with dim_sample, the size of the sample returned will be 4 times the number of elements from the least popular class
-
-
-def stratified_sampling(dim_sample, dataset):
-    num_classes = 4
-    num_element_per_class = dim_sample / num_classes
-
-    class_count_asc = dataset.groupBy(
-        "label").count().sort(asc('count'))
-
-    dataset.unpersist()
-
-    n_least_pop_class = class_count_asc.first()['count']
-
-    # This is to avoid having fractions higher than 1
-    if num_element_per_class > n_least_pop_class:
-        num_element_per_class = n_least_pop_class
-
-    # checking how the class are distributed
-    classes_distribution = class_count_asc.withColumn('percentage', num_element_per_class / col('count')) \
-        .sort(asc('percentage')).select('label', 'percentage').rdd.collectAsMap()
-
-    # print(classes_distribution)
-
-    return dataset.sampleBy("label", fractions=classes_distribution, seed=0)
