@@ -31,7 +31,7 @@ From AWS EC2 consolle, activate all instances you need.
 
 Login into master instance:
 ```
-$ssh -i chiave_aws.pem ubuntu@<Masterdnsaddress>
+$ssh -i chiave_aws.pem ubuntu@<-Master-dns-address->
 ```
 
 Run HDFS:
