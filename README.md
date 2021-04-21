@@ -8,7 +8,7 @@ Finally, we tested the project on various number of instances to show the perfom
 2. [How to run](#How-to-run)
 
 ## Structure
-* proj: contains the application script. It is composed of x main modules:
+* proj: contains the application script. It is composed of 7 main modules:
     * **data_preprocessing.py**, which is a small utility script that takes in input the starting dataset, composed of a .csv file that has two fields, the tweet ID and sentiment, and creates a .txt file only containing the first field. This .txt file will be used for the tweet hydration;
     * **tweet_hydration.sh**, which is a bash script that takes in input the .txt file created by **data_preprocessing.py** and uses Twarc to hydrate the tweets;
     * **jsonl_to_csv.py**, which is a module that takes in input the jsonl files returned from **tweet_hydration.py** and creates a csv file for each one of them, containing only the fields that we need for our analysis;
