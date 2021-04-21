@@ -52,6 +52,11 @@ variable "datanode_count" {
     default = 6 
 }
 
+variable "namenode_ip" {
+    type = string
+    default = "172.31.16.101"
+}
+
 variable "ips" {
     default = {
         "0" = "172.31.16.102"
