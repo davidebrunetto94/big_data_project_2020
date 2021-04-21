@@ -24,8 +24,20 @@ It is important to download the entire GitHub project and maintain the directory
 Installing the AWS CLI is a prerequisite for using Terraform with AWS.
 Download and install AWS CLI v2 for your computer (https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
 
-If you are using AWS Educate, you need to modify ```access_key```, ```secret_key``` and ```token``` parameters in ```terraform.tfvars``` file.
-You can find these data clicking "Account Details" button on the Workbench (or Vocareum) page then clicking on "Show" button.
+
+If you are using AWS classic, you need to have the following information about your AWS account: AWS Access Key ID and Secret Access Key from here:
+https://console.aws.amazon.com/iam/home?#/security_credentials.
+
+From the shell type::
+```
+$ aws configure
+```
+You will be asked:
+* AWS Access Key ID
+* Secret Access Key
+* Default region name (for example: “us-east-1”)
+* Default output format (ignore and press ENTER)
+
 
 ## Terraform Installation
 In our case, Terraform was installed on a Macintosh computer through the terminal and Homebrew.
@@ -64,7 +76,7 @@ terraform -help
 
 
 ## Script Preparation
-Through the shell, navigate to the folder “terraform-aws-instance(educate)” .
+Through the shell, navigate to the folder “terraform-aws-instance(classic)” .
 
 Edit the file ```variables.tf``` in order to change the parameters according to your needs, in particular:
 * ```region:``` the region in which to instantiate the machines,
