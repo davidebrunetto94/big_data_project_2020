@@ -15,7 +15,7 @@ variable "instance_type" {
 
 variable "ami_image" {
     type = string
-    default = "ami-0996d3051b72b5b2c"
+    default = "ami-042e8287309f5df03"
 }
 
 variable "key_name" {

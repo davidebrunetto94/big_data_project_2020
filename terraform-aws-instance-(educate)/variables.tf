@@ -25,7 +25,7 @@ variable "instance_type" {
 
 variable "ami_image" {
     type = string
-    default = "ami-042e8287309f5df03"
+    default = "ami-08962a4068733a2b6"
 }
 
 variable "subnet_id"{
