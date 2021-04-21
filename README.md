@@ -31,7 +31,7 @@ From AWS EC2 consolle, activate all instances you need.
 
 Login into master instance:
 ```
-$ssh -i chiaveaws.pem ubuntu@<Masterdnsaddress>
+$ssh -i chiave_aws.pem ubuntu@<Masterdnsaddress>
 ```
 
 Run HDFS:
@@ -45,7 +45,7 @@ Copy the dataset into HDFS disk:
 ```
 hdfs dfs -mkdir /home
 hdfs dfs -mkdir /home/ubuntu
-hdfs dfs -put tweetdata /home/ubuntu/tweetdata
+hdfs dfs -put tweet_data /home/ubuntu/tweet_data
 ```
 
 Run Spark:
