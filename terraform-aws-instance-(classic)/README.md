@@ -82,7 +82,7 @@ Edit the file ```variables.tf``` in order to change the parameters according to 
 * ```region:``` the region in which to instantiate the machines,
 * ```instance_type:``` the type of machines to instantiate (t2.micro is the type offered by the aws free tier account),
 * ```ami_image:``` specifies the desired OS image,
-* ```numOfSlaves:``` the number of slave nodes,
+* ```datanode_count:``` the number of slave nodes,
 * ```subnet_id:``` specifies the subnet id to be used for the private addresses of the nodes.
 To find this information, you can access to the AWS VPC service, on the left menu open VIRTUAL PRIVATE CLOUD and select “Subnets”: all subnets will appear.
 If there aren't any, create one.

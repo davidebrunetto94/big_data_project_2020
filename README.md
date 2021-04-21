@@ -18,14 +18,50 @@ Finally, we tested the project on various number of instances to show the perfom
     * **machine_learning.py**, this module handles all the machine learning related tasks. It takes in input the clean data and then, creats a feature vector using tf-idf, this vector is then used to train a model to predict the sentiment of the tweets. A number of differet models were tested, in the end our choice fell on a linear SVM as it gave the best overall metrics, achieving a precision of around 90%. The experiments with the other models were left in the code, commented out;
     * **trend_graphs.py**, this module handles the trend graphs. The module takes in input a dataframe called "sentiment_df", which contains the average sentiment of the tweets grouped by day, and a second dataframe called "count_df" which contains the count of the tweets grouped by day. This second dataframe was created using the dehydrated tweets id, because of the fact that the volume of the hydrated tweets is smaller than the counts of tweet IDs since some tweets were deleted afterwards.
 
-* bigdata-terraform-aws-instance: contains the scripts needed to create the environment on AWS
+* terraform-aws-instance(educate): contains the scripts needed to create the environment on AWS educate account
+
+* terraform-aws-instance(classic): contains the scripts needed to create the environment on AWS classic account
 
 ## How to run
-To run the machine learning module of the project, use this command:
+Copy the dataset files in to ```tweet_data``` directory in the master node.
+I suggest using FileZilla to perform this operation.
+If you need a simple guide to do this, you can find it [here](https://angus.readthedocs.io/en/2014/amazon/transfer-files-between-instance.html)
+
+From AWS EC2 consolle, activate all instances you need.
+
+Login into master instance:
 ```
-/opt/spark/bin/spark-submit ./proj/machine_learning.py
+$ssh -i chiaveaws.pem ubuntu@<Masterdnsaddress>
+```
+
+Run HDFS:
+```
+$HADOOPHOME/sbin/start-dfs.sh
+$HADOOPHOME/sbin/start-yarn.sh
+$HADOOPHOME/sbin/mr-jobhistory-daemon.sh start historyserver
+```
+
+Copy the dataset into HDFS disk:
+```
+hdfs dfs -mkdir /home
+hdfs dfs -mkdir /home/ubuntu
+hdfs dfs -put tweetdata /home/ubuntu/tweetdata
+```
+
+Run Spark:
+```
+$SPARKHOME/sbin/start-master.sh
+$SPARKHOME/sbin/start-slaves.sh spark://s01:7077
+```
+
+
+To run the machine learning module of the project, use this command:
+ATTENTION: replace the number of cores and memory based on the type of instances you have chosen to use.
+
+```
+/opt/spark-3.0.2-bin-hadoop2.7/bin/spark-submit --masterspark://s01:7077 --executor-cores 4 --executor-memory 14gmachinelearning.py
 ```
 To run the trend analysis module of the project, use this command:
 ```
-/opt/spark/bin/spark-submit ./proj/trend_graphs.py
+/opt/spark-3.0.2-bin-hadoop2.7/bin/spark-submit --masterspark://s01:7077 --executor-cores 4 --executor-memory 14gtrendgraphs.py
 ```
