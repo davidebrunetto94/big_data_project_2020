@@ -1,40 +1,51 @@
 variable "region" {
     type = string
-    default = "us-east-2"
+    default = "us-east-1"
 }
 
-variable "profile"{
+variable "access_key" {
     type = string
-    default = "default"
+    default = ""
+}
+
+variable "secret_key" {
+    type = string
+    default = ""
+}
+
+variable "token" {
+    type = string
+    default = null
 }
 
 variable "instance_type" {
     type = string
-    default = "t2.micro"               # change instance type if needed
+    default = "t2.xlarge"
 }
 
 variable "ami_image" {
     type = string
-    default = "ami-0996d3051b72b5b2c"   # ubuntu image
+    default = "ami-042e8287309f5df03"
+}
+
+variable "subnet_id"{
+	type = string
+	default = "subnet-8c773bc1"
 }
 
 variable "key_name" {
     type = string
-    default = "localkey"                # key name, see readme
-}
-
-variable "subnetId" {
-    default = "subnet-915144eb"
+    default = "localkey"
 }
 
 variable "key_path" {
     type = string
-    default = "."                       # change directory to local .ssh directory e.g. ~/.ssh/
+    default = "."
 }
 
 variable "aws_key_name" {
     type = string
-    default = "chiave_aws"                  # key name, see readme
+    default = "chiave_aws"
 }
 
 variable "amz_key_path" {
@@ -44,12 +55,17 @@ variable "amz_key_path" {
 
 variable "namenode_count" {
     type = number
-    default = 1                         # count = 1 = 1 aws EC2
+    default = 1
 }
 
 variable "datanode_count" {
     type = number
-    default = 6                         # count = 3 = 3 aws EC2
+    default = 5
+}
+
+variable "namenode_ip" {
+	type = string
+	default = "172.31.16.101"
 }
 
 variable "ips" {
@@ -60,7 +76,14 @@ variable "ips" {
         "3" = "172.31.16.105"
         "4" = "172.31.16.106"
         "5" = "172.31.16.107"
+        "6" = "172.31.16.108"
+        "7" = "172.31.16.109"
     }
+}
+
+variable "namenode_name" {
+	type = string
+	default = "s01"
 }
 
 variable "hostnames" {
@@ -71,5 +94,9 @@ variable "hostnames" {
         "3" = "s05"
         "4" = "s06"
         "5" = "s07"
+        "6" = "s08"
+        "7" = "s09"
     }
 }
+
+

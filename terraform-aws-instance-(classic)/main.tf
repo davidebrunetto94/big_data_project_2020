@@ -5,10 +5,8 @@ locals {
 
 
 provider "aws" {
-    region      = var.region
-    access_key  = var.access_key
-    secret_key  = var.secret_key
-    token       = var.token
+    region  = var.region
+    profile = var.profile
 }
 
 resource "aws_security_group" "Hadoop_cluster_sc" {
@@ -38,16 +36,16 @@ resource "aws_security_group" "Hadoop_cluster_sc" {
 
 # namenode (master)
 resource "aws_instance" "Namenode" {
-    subnet_id = "subnet-8c773bc1"
     count = var.namenode_count
     ami = var.ami_image
     instance_type = var.instance_type
     key_name = var.aws_key_name
     tags = {
-        Name = "s01"
+        Name = var.namenode_name
     }
-    private_ip = "172.31.16.101"
+    private_ip = var.namenode_ip
     vpc_security_group_ids = [aws_security_group.Hadoop_cluster_sc.id]
+    subnet_id = var.subnet_id
 
     provisioner "file" {
         source      = "install-all.sh"
@@ -64,7 +62,7 @@ resource "aws_instance" "Namenode" {
     provisioner "file" {
         source      = "app/"
         destination = "/home/ubuntu/"
-
+    
         connection {
             host     = self.public_dns
             type     = "ssh"
@@ -106,7 +104,7 @@ resource "aws_instance" "Namenode" {
 
 # datanode (slaves)
 resource "aws_instance" "Datanode" {
-    subnet_id = "subnet-8c773bc1"
+    subnet_id = var.subnet_id
     count = var.datanode_count
     ami = var.ami_image
     instance_type = var.instance_type

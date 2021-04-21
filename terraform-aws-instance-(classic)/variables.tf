@@ -3,59 +3,53 @@ variable "region" {
     default = "us-east-1"
 }
 
-variable "access_key" {
+variable "profile"{
     type = string
-    default = ""
-}
-
-variable "secret_key" {
-    type = string
-    default = ""
-}
-
-variable "token" {
-    type = string
-    default = null
+    default = "default"
 }
 
 variable "instance_type" {
     type = string
-    default = "t2.xlarge"               # change instance type if needed
+    default = "t2.micro"
 }
 
 variable "ami_image" {
     type = string
-    default = "ami-042e8287309f5df03"   # ubuntu image
+    default = "ami-0996d3051b72b5b2c"
 }
 
 variable "key_name" {
     type = string
-    default = "localkey"                # key name, see readme
+    default = "localkey"
+}
+
+variable "subnet_id" {
+    default = "subnet-915144eb"
 }
 
 variable "key_path" {
     type = string
-    default = "."                       # change directory to local .ssh directory e.g. ~/.ssh/
+    default = "."
 }
 
 variable "aws_key_name" {
     type = string
-    default = "amzkey"                  # key name, see readme
+    default = "chiave_aws"
 }
 
 variable "amz_key_path" {
     type = string
-    default = "amzkey.pem"
+    default = "chiave_aws.pem"
 }
 
 variable "namenode_count" {
     type = number
-    default = 1                         # count = 1 = 1 aws EC2
+    default = 1 
 }
 
 variable "datanode_count" {
     type = number
-    default = 5                         # count = 3 = 3 aws EC2
+    default = 6 
 }
 
 variable "ips" {
@@ -69,6 +63,11 @@ variable "ips" {
         "6" = "172.31.16.108"
         "7" = "172.31.16.109"
     }
+}
+
+variable "namenode_name" {
+    type = string
+    default = "s01"
 }
 
 variable "hostnames" {
