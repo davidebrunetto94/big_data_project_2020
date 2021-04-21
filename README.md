@@ -67,8 +67,23 @@ To run the trend analysis module of the project, use this command:
 ```
 ## Testing results
 
+### Machine learning
+
 | Number of nodes  | Time in seconds |
 | ------------- | ------------- |
-| 1  | Content Cell  |
-| 2 | Content Cell  |
+| 1  | 170.29  |
+| 2 | 137.53  |
+| 3  | 106.94  |
+| 4 | 97.78  |
+| 5  | 89.11  |
+
+### Trend graphs
+
+| Number of nodes  | Time in seconds |
+| ------------- | ------------- |
+| 1  | 90.25  |
+| 2 | 74.58  |
+| 3  | 58.88  |
+| 4 | 49.50  |
+| 5  | 40.12  |
 
