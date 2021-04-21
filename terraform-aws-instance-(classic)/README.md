@@ -137,3 +137,6 @@ If we want to cancel the execution of the command ```apply``` you can execute:
 When prompted, type the answer ```yes```.
 
 We can use the same command to delete instances when we no longer need them.
+
+## This script is based on the following project:
+ * [hadoop-spark-cluster-deployment](https://github.com/kostistsaprailis/hadoop-spark-cluster-deployment)
