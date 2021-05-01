@@ -4,7 +4,7 @@ Introduction: this guide is based on the script we created and tested on an AWSf
 With some minor modifications, the script can also be used on an AWS educate account.
 
 1. [Package contents](#Package-contents)
-2. [AWS CLI Installation](#AWS-CLI-Installation)
+2. [HOW TO USE](#HOW TO USE)
 
 ## Package contents
 It is important to download the entire GitHub project and maintain the directory structure.
