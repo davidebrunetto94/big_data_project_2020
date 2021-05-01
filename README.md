@@ -1,7 +1,7 @@
 # Trend analysis and Multi-Class TextClassification on a dataset of tweets regarding Covid-19 with PySpark
 This project uses a [Kaggle dataset](https://www.kaggle.com/varisha25/ieee-covid19-tweets-dataset) which contains the ids of tweets regarding the current covid-19 pandemic and their sentiment and, using Spark, analyzes them to understand how the phenomenon has changes over the course of time, for example showing the trend of the volume of tweets, or showing the trend of the "sentiment" value.
 As per the Twitter Developer Policy, the dataset doesn't provide the tweet's text, but only provides the Tweet IDs, we thus had to "hydrate" the tweets using [Twarc](https://github.com/DocNow/twarc), a command line tool the using the Twitter Developer API, allowed us to gather the complete tweets from their IDs.
-The data obtained from the hydration process was then used to train a machine learning algorithm, specifically a logistic regression model, to predict the sentiment of the tweet based on its text, with a value ranging from 0, which means a strong negative sentiment, to 4, which means a strong positive sentiment. To do so, the "sentiment" field, which was originally a continuous value ranging from -1 to 1, was discretized into a value ranging from 0 to 4.
+The data obtained from the hydration process was then used to train a machine learning algorithm, specifically a SVM, to predict the sentiment of the tweet based on its text, with a value ranging from 0, which means a strong negative sentiment, to 3, which means a strong positive sentiment. To do so, the "sentiment" field, which was originally a continuous value ranging from -1 to 1, was discretized into a value ranging from 0 to 3.
 Finally, we tested the project on various number of instances to show the perfomance improvement brought by a greater number of computation nodes.
 
 1. [Structure](#Structure)
@@ -65,3 +65,25 @@ To run the trend analysis module of the project, use this command:
 ```
 /opt/spark-3.0.2-bin-hadoop2.7/bin/spark-submit --masterspark://s01:7077 --executor-cores 4 --executor-memory 14gtrendgraphs.py
 ```
+## Testing results
+
+### Machine learning
+
+| Number of nodes  | Time in seconds |
+| ------------- | ------------- |
+| 1  | 170.29  |
+| 2 | 137.53  |
+| 3  | 106.94  |
+| 4 | 97.78  |
+| 5  | 89.11  |
+
+### Trend graphs
+
+| Number of nodes  | Time in seconds |
+| ------------- | ------------- |
+| 1  | 90.25  |
+| 2 | 74.58  |
+| 3  | 58.88  |
+| 4 | 49.50  |
+| 5  | 40.12  |
+
