@@ -366,3 +366,7 @@ terraform-aws-instance-(classic)+S3bucket/.terraform.lock.hcl
 terraform-aws-instance-(classic)+S3bucket/.terraform/providers/registry.terraform.io/hashicorp/aws/3.38.0/darwin_amd64/terraform-provider-aws_v3.38.0_x5
 terraform-aws-instance-(classic)+S3bucket/chiave_aws.pem
 terraform-aws-instance-(classic)+S3bucket/gost/main.tf
+terraform-aws-s3bucket-(classic)/.terraform.lock.hcl
+terraform-aws-s3bucket-(classic)/.terraform/providers/registry.terraform.io/hashicorp/aws/3.38.0/darwin_amd64/terraform-provider-aws_v3.38.0_x5
+terraform-aws-s3bucket-(classic)/tweet_data/variables.tf
+terraform-aws-s3bucket-(classic)/tweet_data/main.tf

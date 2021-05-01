@@ -40,8 +40,8 @@ resource "aws_iam_instance_profile" "ec2_profile" {
   role = "${aws_iam_role.ec2_role.name}"
 }
 
-resource "aws_iam_role_policy" "test_policy" {
-  name = "test_policy"
+resource "aws_iam_role_policy" "s3_policy" {
+  name = "s3_policy"
   role = "${aws_iam_role.ec2_role.id}"
 
   policy = <<EOF
