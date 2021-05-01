@@ -4,14 +4,14 @@ Introduction: this guide is based on the script we created and tested on an AWSf
 With some minor modifications, the script can also be used on an AWS educate account.
 
 1. [Package contents](#Package-contents)
-2. [HOW TO USE](#HOW TO USE)
+2. [How to use](#How-to-use)
 
 ## Package contents
 It is important to download the entire GitHub project and maintain the directory structure.
 * main.tf: terraform script that creates the S2 bucket on your AWS account
 * variables.tf: contains the configuration parameters for the script
 
-## HOW TO USE
+## How to use
 Before starting, you need to create a ```tweetdata``` folder in the directory of the terraform application in question and put all the files we want in our bucket inside.
 The only configuration in the code that may be necessary is to modify the ```bucketName``` variable in the ```variables.tf``` file by inserting the name we want to give to the bucket.
 
